@@ -1,16 +1,31 @@
-# React + Vite
+# Commitology Web Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The Commitology frontend is a React 19 application built with Vite. It provides repository and commit exploration, feature clustering, knowledge visualizations, and a Markdown document viewer.
 
-Currently, two official plugins are available:
+For whole-project setup, backend configuration, and architecture, see the [project README](../README.md).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Start the Client
 
-## React Compiler
+Requirements: Node.js and npm.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```powershell
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Open the local URL printed by Vite. The client expects the API at `http://localhost:8000` for live mode; start the FastAPI backend from `server/` as described in the project README.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Demo and Live Modes
+
+The app enables demo mode on first visit and uses sample data from `src/services/mockData.js`. Demo mode lets you explore the interface without backend or OAuth credentials. To use real GitHub repositories and AI features, switch to live mode and configure the backend's GitHub OAuth and Gemini credentials.
+
+API calls, bearer-token handling, and demo-mode selection are implemented in `src/services/api.js`. The client stores its token and demo-mode setting in browser local storage.
+
+## Scripts
+
+```powershell
+npm run dev      # Start the Vite development server
+npm run lint     # Run ESLint
+npm run build    # Create a production build in dist/
+npm run preview  # Preview the production build locally
+```
