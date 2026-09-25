@@ -44,6 +44,7 @@ export default function App() {
     return val === "true";
   });
 
+  const [crtEnabled, setCrtEnabled] = useState(false);
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -179,6 +180,9 @@ export default function App() {
 
     if (demoMode) {
       setFeatures(MOCK_CATEGORIZE_RESPONSE.features);
+    } else {
+      // In live mode, automatically trigger feature categorization for the active repo
+      handleCategorize({ max_commits: 50, include_knowledge_graph: true });
     }
   }, [selectedRepo, demoMode]);
 
@@ -193,7 +197,8 @@ export default function App() {
         include_knowledge_graph,
       });
       setFeatures(res.features || []);
-      showToast(`Clustered ${res.features?.length || 0} features from ${res.total_commits || max_commits} commits!`);
+      showToast(`Decompiled ${res.features?.length || 0} features from ${res.total_commits || max_commits} commits!`);
+      return res.features;
     } catch (err) {
       console.error("Categorize failed:", err);
       showToast(`Clustering failed: ${err.message}`);
@@ -208,7 +213,7 @@ export default function App() {
     setGeneratingDocId(fid);
     try {
       const docRes = await generateDoc({
-        repo: selectedRepo || "ecommerce-platform",
+        repo: selectedRepo || "repo",
         feature_id: fid,
         feature_name: feature.name || feature.feature_name,
         feature_summary: feature.summary,
@@ -216,6 +221,7 @@ export default function App() {
       });
       setActiveDoc(docRes);
       showToast(`Generated ${docRes.filename || "documentation"} successfully!`);
+      return docRes;
     } catch (err) {
       console.warn("Live doc synthesis fallback to local spec:", err.message);
       showToast(`Generated specification for ${feature.name || fid}`);
@@ -270,6 +276,11 @@ export default function App() {
         </div>
       )}
 
+      {/* Scanline Overlay */}
+      {crtEnabled && (
+        <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-25" />
+      )}
+
       {/* Global Navbar */}
       <Navbar
         user={user}
@@ -281,6 +292,8 @@ export default function App() {
         onSelectTab={setActiveTab}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        crtEnabled={crtEnabled}
+        onToggleCrt={() => setCrtEnabled(!crtEnabled)}
         onSelectDeveloper={(devId) => {
           setSelectedDeveloperId(devId);
           setActiveTab("workspace");
@@ -303,6 +316,9 @@ export default function App() {
               selectedLiveRepo={selectedRepo}
               onSelectLiveRepo={setSelectedRepo}
               liveFeatures={features}
+              onCategorizeFeatures={handleCategorize}
+              isCategorizing={clusteringLoading}
+              knowledgeData={knowledgeData}
               onGenerateDocApi={handleGenerateDoc}
               generatingDocId={generatingDocId}
               searchQuery={searchQuery}

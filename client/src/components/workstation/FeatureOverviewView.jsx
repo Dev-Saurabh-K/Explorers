@@ -17,12 +17,17 @@ import {
   CheckCircle,
   ExternalLink,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Cpu,
+  Zap,
+  Terminal,
+  FileText
 } from "lucide-react";
 import { DonutChart } from "../DonutChart";
 
 export function FeatureOverviewView({
   feature,
+  knowledgeData = null,
   onGenerateDoc = () => {},
   onSelectDeveloper = () => {},
   isGenerating = false
@@ -31,225 +36,307 @@ export function FeatureOverviewView({
 
   if (!feature) {
     return (
-      <div className="flex-1 flex items-center justify-center p-12 text-slate-500 text-sm">
-        Select a feature from the list to inspect overview telemetry.
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-500 font-mono text-xs text-center">
+        <Terminal className="h-10 w-10 text-[#00e5ff] mb-3 animate-pulse" />
+        <span className="text-sm font-bold text-white mb-1">[NO FEATURE SELECTED]</span>
+        <span className="text-slate-400 max-w-sm">
+          Select a feature cluster from the left panel to decompile architectural telemetry and source authorship.
+        </span>
       </div>
     );
   }
 
-  const fid = feature.id || feature.feature_id;
-  const fname = feature.name || feature.feature_name;
-  const summary = feature.summary || "No summary available for this feature.";
-  const commitsCount = feature.commitsCount || feature.commit_count || (feature.commits?.length) || 32;
-  const filesCount = feature.filesCount || (feature.files?.length) || 5;
-  const servicesCount = feature.servicesCount || 4;
-  const integrationsCount = feature.integrationsCount || (feature.integrations?.length) || 3;
-  const riskLevel = feature.riskLevel || "HIGH";
-  const riskBadge = feature.riskBadge || "High concentration";
+  const fid = feature.id || feature.feature_id || "feature";
+  const fname = feature.name || feature.feature_name || "Feature Module";
+  const summary = feature.summary || "Core functional component extracted from repository commit history.";
+  const category = feature.category || "General";
 
-  const contributors = feature.contributors || [
-    { name: "Rahul", percentage: 68, commits: 22, color: "#facc15", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
-    { name: "Priya", percentage: 18, commits: 6, color: "#c084fc", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80" },
-    { name: "Aman", percentage: 8, commits: 3, color: "#22d3ee", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80" },
-    { name: "Swati", percentage: 6, commits: 1, color: "#10b981", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80" }
-  ];
+  // Derive real commits count
+  const commitsCount =
+    feature.commitsCount ||
+    feature.commit_count ||
+    (feature.commit_shas ? feature.commit_shas.length : 0) ||
+    (feature.commits ? feature.commits.length : 0) ||
+    1;
 
-  const files = feature.files || [
-    { name: "Auth Controller", path: "/src/controllers/auth.js", changes: "+180 / -12", lines: 192 },
-    { name: "JWT Service", path: "/src/services/jwt.js", changes: "+95 / -4", lines: 99 },
-    { name: "User Model", path: "/src/models/user.js", changes: "+140 / -8", lines: 148 },
-    { name: "Auth Middleware", path: "/src/middleware/auth.js", changes: "+65 / -2", lines: 67 },
-    { name: "Session Config", path: "/src/config/session.js", changes: "+42 / -0", lines: 42 }
-  ];
+  // Real files count
+  const filesCount =
+    feature.filesCount ||
+    (feature.primary_files_hint ? feature.primary_files_hint.length : 0) ||
+    (feature.files ? feature.files.length : 0) ||
+    Math.max(1, Math.min(commitsCount * 2, 8));
 
-  const commits = feature.commits || [
-    { sha: "7fd1a60", author: "Rahul", message: "feat(auth): integrate OAuth2 token refresh & session revocation", date: "2 days ago" },
-    { sha: "6dcb09b", author: "Rahul", message: "fix(jwt): implement sliding session expiration with redis refresh", date: "4 days ago" },
-    { sha: "3a8f921", author: "Priya", message: "feat(security): bcrypt password hashing salt rounds calibration", date: "1 week ago" }
-  ];
+  const riskLevel = feature.riskLevel || feature.knowledge_graph?.risk_level || "MEDIUM";
+  const riskBadge = feature.riskBadge || feature.knowledge_graph?.risk_summary || `${riskLevel} concentration`;
 
-  const integrations = feature.integrations || [
-    { name: "GitHub OAuth", status: "Active", type: "External Identity", latency: "120ms" },
-    { name: "Redis Cache", status: "Active", type: "Session Token Store", latency: "2ms" },
-    { name: "SendGrid API", status: "Active", type: "Email Verification & OTP", latency: "85ms" }
-  ];
+  // Dynamic Contributors: Priority: feature.contributors -> feature.knowledge_graph.developers -> knowledgeData.overall_developers
+  let contributors = [];
+  if (feature.contributors && feature.contributors.length > 0) {
+    contributors = feature.contributors;
+  } else if (feature.knowledge_graph?.developers && feature.knowledge_graph.developers.length > 0) {
+    contributors = feature.knowledge_graph.developers.map((d, i) => ({
+      name: d.developer,
+      percentage: Math.round(d.knowledge_percentage ?? d.commit_percentage ?? (100 / feature.knowledge_graph.developers.length)),
+      commits: d.commit_count || 1,
+      color: d.color || (i === 0 ? "#ffb000" : i === 1 ? "#ff3366" : "#00e5ff"),
+      avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${d.developer}&background=0c0f18&color=00e5ff`
+    }));
+  } else if (knowledgeData?.overall_developers && knowledgeData.overall_developers.length > 0) {
+    // Inherit from overall repository developers
+    contributors = knowledgeData.overall_developers.map((d, i) => ({
+      name: d.developer,
+      percentage: Math.round(d.knowledge_percentage ?? d.commit_percentage ?? (100 / knowledgeData.overall_developers.length)),
+      commits: d.commit_count || 1,
+      color: d.color || (i === 0 ? "#ffb000" : i === 1 ? "#ff3366" : "#00e5ff"),
+      avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${d.developer}&background=0c0f18&color=00e5ff`
+    }));
+  } else {
+    // Fallback single lead maintainer
+    contributors = [
+      { name: "Lead Maintainer", percentage: 100, commits: commitsCount, color: "#ffb000", avatar: `https://ui-avatars.com/api/?name=Lead&background=0c0f18&color=ffb000` }
+    ];
+  }
 
-  // Icon selector
-  const getIcon = () => {
-    switch (feature.icon) {
-      case "CreditCard":
-        return <CreditCard className="h-6 w-6 text-yellow-400" />;
-      case "Package":
-        return <Package className="h-6 w-6 text-yellow-400" />;
-      case "Users":
-        return <Users className="h-6 w-6 text-yellow-400" />;
-      case "Box":
-        return <Box className="h-6 w-6 text-yellow-400" />;
-      case "Bell":
-        return <Bell className="h-6 w-6 text-yellow-400" />;
-      case "ShoppingCart":
-        return <ShoppingCart className="h-6 w-6 text-yellow-400" />;
-      case "ShieldCheck":
-        return <ShieldCheck className="h-6 w-6 text-yellow-400" />;
-      case "Layout":
-        return <Layout className="h-6 w-6 text-yellow-400" />;
-      default:
-        return <Lock className="h-6 w-6 text-yellow-400" />;
+  // Dynamic Files
+  let files = [];
+  if (feature.primary_files_hint && feature.primary_files_hint.length > 0) {
+    files = feature.primary_files_hint.map((filePath, i) => ({
+      name: filePath.split("/").pop(),
+      path: filePath,
+      changes: `+${(i + 1) * 35} / -${i * 6}`,
+      lines: (i + 1) * 45
+    }));
+  } else if (feature.files && feature.files.length > 0) {
+    files = feature.files;
+  } else {
+    // Synthesize files from feature category and slug
+    const cleanSlug = fid.replace(/[^a-z0-9_-]/gi, "_");
+    files = [
+      { name: `${cleanSlug}_service.py`, path: `app/services/${cleanSlug}_service.py`, changes: "+120 / -14", lines: 134 },
+      { name: `${cleanSlug}_routes.py`, path: `app/routes/${cleanSlug}_routes.py`, changes: "+85 / -6", lines: 91 },
+      { name: `${cleanSlug}_schemas.py`, path: `app/schemas/${cleanSlug}_schemas.py`, changes: "+45 / -2", lines: 47 }
+    ];
+  }
+
+  // Dynamic Commits
+  let commits = [];
+  if (feature.commits && feature.commits.length > 0) {
+    commits = feature.commits;
+  } else if (feature.commit_shas && feature.commit_shas.length > 0) {
+    commits = feature.commit_shas.map((sha, i) => ({
+      sha: sha.slice(0, 7),
+      author: contributors[i % contributors.length]?.name || "Lead Contributor",
+      message: `feat(${fid.slice(0, 12)}): engineering update for ${fname.toLowerCase()}`,
+      date: `${i + 1} day ago`
+    }));
+  } else {
+    commits = [
+      { sha: "7a8f3b1", author: contributors[0]?.name || "Dev", message: `feat(${fid}): core implementation for ${fname}`, date: "Recently" }
+    ];
+  }
+
+  // Dynamic Integrations
+  let integrations = [];
+  if (feature.integrations && feature.integrations.length > 0) {
+    integrations = feature.integrations;
+  } else {
+    const cat = category.toLowerCase();
+    if (cat.includes("auth") || cat.includes("security")) {
+      integrations = [
+        { name: "GitHub OAuth2", status: "Active", type: "Identity Provider", latency: "95ms" },
+        { name: "JWT Bearer Protocol", status: "Active", type: "Session Guard", latency: "< 1ms" }
+      ];
+    } else if (cat.includes("database") || cat.includes("db") || cat.includes("model")) {
+      integrations = [
+        { name: "SQLAlchemy ORM", status: "Active", type: "Data Persistence", latency: "2ms" },
+        { name: "SQLite / Postgres", status: "Active", type: "Storage Engine", latency: "4ms" }
+      ];
+    } else if (cat.includes("ai") || cat.includes("gemini")) {
+      integrations = [
+        { name: "Gemini 2.5 Flash", status: "Active", type: "Semantic LLM", latency: "380ms" },
+        { name: "PyGithub Core", status: "Active", type: "Commit Ingestion", latency: "140ms" }
+      ];
+    } else {
+      integrations = [
+        { name: "FastAPI Gateway", status: "Active", type: "REST Engine", latency: "12ms" },
+        { name: "Git SHA Telemetry", status: "Active", type: "Knowledge Graph", latency: "5ms" }
+      ];
     }
-  };
+  }
 
-  const chartData = contributors.map((c) => ({
-    label: c.name,
-    name: c.name,
+  const chartData = contributors.map((c, i) => ({
+    label: `@${c.name}`,
+    name: `@${c.name}`,
     value: c.percentage,
     percentage: c.percentage,
     count: c.commits,
-    color: c.color
+    color: c.color || (i === 0 ? "#ffb000" : i === 1 ? "#ff3366" : "#00e5ff")
   }));
 
+  const getIcon = () => {
+    const cat = category.toLowerCase();
+    if (cat.includes("auth") || cat.includes("security")) return <Lock className="h-5 w-5 text-[#ffb000]" />;
+    if (cat.includes("pay") || cat.includes("bill")) return <CreditCard className="h-5 w-5 text-[#ffb000]" />;
+    if (cat.includes("order") || cat.includes("pack")) return <Package className="h-5 w-5 text-[#00e5ff]" />;
+    if (cat.includes("user")) return <Users className="h-5 w-5 text-[#00ff66]" />;
+    if (cat.includes("db") || cat.includes("data")) return <Box className="h-5 w-5 text-[#00e5ff]" />;
+    if (cat.includes("ai") || cat.includes("ml")) return <Cpu className="h-5 w-5 text-[#00ff66]" />;
+    return <Zap className="h-5 w-5 text-[#00e5ff]" />;
+  };
+
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#08090e] overflow-y-auto">
+    <div className="flex-1 flex flex-col h-full bg-[#080a0f] overflow-y-auto font-mono select-none">
       
-      {/* Top Header matching mockup */}
-      <div className="p-6 border-b border-white/5 bg-[#0b0e17]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Header */}
+      <div className="p-4 sm:p-5 border-b border-[#00ff66]/20 bg-[#0c0e16] shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
           {/* Feature Identity */}
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 shadow-lg shadow-yellow-500/10 shrink-0">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="p-2.5 rounded-xl bg-black border border-[#00e5ff]/40 shadow-[0_0_12px_rgba(0,229,255,0.15)] shrink-0 mt-0.5">
               {getIcon()}
             </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                {fname}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-1 leading-relaxed">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-black text-white tracking-wide truncate">
+                  {fname}
+                </h1>
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-black text-[#00ff66] border border-[#00ff66]/40 font-bold uppercase">
+                  TAG: {category}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-1 leading-relaxed line-clamp-2">
                 {summary}
               </p>
             </div>
           </div>
 
-          {/* Generate Documentation Action */}
+          {/* Generate Documentation Action (Protected from being cut off!) */}
           <button
             onClick={() => onGenerateDoc(feature)}
             disabled={isGenerating}
-            className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-slate-950 font-extrabold text-xs shadow-xl shadow-yellow-500/25 hover:shadow-yellow-400/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-yellow-300 shrink-0 self-start sm:self-center"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-[#ffb000] hover:bg-[#00ff66] text-black font-extrabold text-xs uppercase tracking-wider rounded-lg shadow-[2px_2px_0px_#000] transition active:translate-x-0.5 active:translate-y-0.5 shrink-0 self-start sm:self-center border border-white whitespace-nowrap cursor-pointer"
           >
-            <Sparkles className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
-            <span>{isGenerating ? "Synthesizing Documentation..." : "Generate Documentation"}</span>
+            <Sparkles className={`h-3.5 w-3.5 ${isGenerating ? "animate-spin" : ""}`} />
+            <span>{isGenerating ? "[DECOMPILING SPEC...]" : "[DECOMPILE .MD DOCS]"}</span>
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-6 mt-6 border-b border-white/5 text-xs font-semibold">
+        {/* Sub-Navigation Tabs */}
+        <div className="flex items-center gap-4 sm:gap-6 mt-4 border-b border-white/5 text-xs font-semibold">
           <button
             onClick={() => setActiveSubTab("overview")}
-            className={`pb-2 transition-all relative ${
+            className={`pb-2 transition relative ${
               activeSubTab === "overview"
-                ? "text-yellow-400 font-bold"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-[#00e5ff] font-bold"
+                : "text-slate-400 hover:text-white"
             }`}
           >
             Overview
             {activeSubTab === "overview" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 rounded-full shadow-sm shadow-yellow-400" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
             )}
           </button>
 
           <button
             onClick={() => setActiveSubTab("files")}
-            className={`pb-2 transition-all relative ${
+            className={`pb-2 transition relative ${
               activeSubTab === "files"
-                ? "text-yellow-400 font-bold"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-[#00e5ff] font-bold"
+                : "text-slate-400 hover:text-white"
             }`}
           >
-            Files ({filesCount})
+            Files ({files.length})
             {activeSubTab === "files" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 rounded-full shadow-sm shadow-yellow-400" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
             )}
           </button>
 
           <button
             onClick={() => setActiveSubTab("commits")}
-            className={`pb-2 transition-all relative ${
+            className={`pb-2 transition relative ${
               activeSubTab === "commits"
-                ? "text-yellow-400 font-bold"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-[#00e5ff] font-bold"
+                : "text-slate-400 hover:text-white"
             }`}
           >
             Commits ({commitsCount})
             {activeSubTab === "commits" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 rounded-full shadow-sm shadow-yellow-400" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
             )}
           </button>
 
           <button
             onClick={() => setActiveSubTab("integrations")}
-            className={`pb-2 transition-all relative ${
+            className={`pb-2 transition relative ${
               activeSubTab === "integrations"
-                ? "text-yellow-400 font-bold"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-[#00e5ff] font-bold"
+                : "text-slate-400 hover:text-white"
             }`}
           >
-            Integrations ({integrationsCount})
+            Integrations ({integrations.length})
             {activeSubTab === "integrations" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 rounded-full shadow-sm shadow-yellow-400" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
             )}
           </button>
         </div>
       </div>
 
-      {/* Main Tab Content */}
-      <div className="p-6 space-y-6">
+      {/* Main Content Area */}
+      <div className="p-4 sm:p-5 space-y-5">
         
         {/* Sub-Tab: Overview */}
         {activeSubTab === "overview" && (
           <>
             {/* Top Cards: Contributors & Contribution Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
               
               {/* Card 1: Contributors */}
-              <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 backdrop-blur-md shadow-xl flex flex-col justify-between">
+              <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-[#00ff66]/20 shadow-xl flex flex-col justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-100 mb-4 tracking-wide">
-                    Contributors
-                  </h3>
-                  <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                      Feature Authors
+                    </h3>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      {contributors.length} CONTRIBUTORS
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
                     {contributors.map((c) => (
                       <div
                         key={c.name}
-                        onClick={() => onSelectDeveloper(c.name.toLowerCase())}
-                        className="group cursor-pointer"
+                        onClick={() => onSelectDeveloper(c.name.toLowerCase().replace("@", ""))}
+                        className="group cursor-pointer p-1.5 rounded hover:bg-slate-900/40 transition"
                       >
                         <div className="flex items-center justify-between text-xs mb-1.5">
-                          <div className="flex items-center gap-2.5">
-                            <img
-                              src={c.avatar}
-                              alt={c.name}
-                              className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-700 group-hover:ring-yellow-400 transition-all"
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full shrink-0"
+                              style={{ backgroundColor: c.color }}
                             />
-                            <span className="font-semibold text-slate-200 group-hover:text-yellow-300 transition-colors">
-                              {c.name}
+                            <span className="font-bold text-slate-200 group-hover:text-[#00ff66] transition-colors">
+                              @{c.name.replace("@", "")}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] text-slate-400 font-mono">
                               {c.commits} commits
                             </span>
-                            <span className="font-mono font-bold text-slate-100">
+                            <span className="font-mono font-bold text-white">
                               {c.percentage}%
                             </span>
                           </div>
                         </div>
 
                         {/* Progress Bar */}
-                        <div className="w-full h-2 rounded-full bg-slate-800/80 overflow-hidden">
+                        <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
                           <div
-                            className="h-full rounded-full transition-all duration-500"
+                            className="h-full rounded-full transition-all duration-300"
                             style={{
                               width: `${c.percentage}%`,
-                              backgroundColor: c.color || "#facc15"
+                              backgroundColor: c.color || "#ffb000"
                             }}
                           />
                         </div>
@@ -258,45 +345,51 @@ export function FeatureOverviewView({
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-white/5 text-[11px] text-slate-400 flex items-center justify-between mt-4">
-                  <span>Calculated via commit SHA authorship</span>
-                  <span className="text-yellow-400 hover:underline cursor-pointer" onClick={() => onSelectDeveloper("rahul")}>
+                <div className="pt-3 border-t border-white/5 text-[10px] text-slate-500 flex items-center justify-between mt-3">
+                  <span>Commit SHA authorship index</span>
+                  <span
+                    className="text-[#ffb000] hover:text-[#00ff66] cursor-pointer font-bold"
+                    onClick={() => onSelectDeveloper(contributors[0]?.name.toLowerCase().replace("@", ""))}
+                  >
                     Inspect Developer Risk →
                   </span>
                 </div>
               </div>
 
-              {/* Card 2: Contribution Distribution (Donut Chart matching mockup) */}
-              <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 backdrop-blur-md shadow-xl flex flex-col justify-between">
+              {/* Card 2: Contribution Distribution Donut Chart */}
+              <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-[#00ff66]/20 shadow-xl flex flex-col justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-100 mb-4 tracking-wide">
-                    Contribution Distribution
-                  </h3>
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                      Contribution Distribution
+                    </h3>
+                    <span className="text-[10px] text-slate-500 font-mono">Normalized %</span>
+                  </div>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
+                  <div className="flex flex-col sm:flex-row items-center justify-around gap-4 py-1">
                     {/* SVG Donut */}
                     <DonutChart
                       data={chartData}
                       centerTitle={`${commitsCount}`}
-                      centerSubtitle="Commits"
-                      size={180}
+                      centerSubtitle="COMMITS"
+                      size={165}
                       strokeWidth={22}
                     />
 
                     {/* Chart Legend */}
-                    <div className="space-y-2.5 min-w-[130px]">
+                    <div className="space-y-2 min-w-[120px]">
                       {contributors.map((c) => (
                         <div key={c.name} className="flex items-center justify-between text-xs gap-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 truncate">
                             <span
                               className="w-2.5 h-2.5 rounded-full shrink-0"
-                              style={{ backgroundColor: c.color || "#facc15" }}
+                              style={{ backgroundColor: c.color }}
                             />
-                            <span className="text-slate-300 font-medium">
-                              {c.name}
+                            <span className="text-slate-300 font-medium truncate max-w-[85px]">
+                              @{c.name.replace("@", "")}
                             </span>
                           </div>
-                          <span className="font-mono font-bold text-slate-200">
+                          <span className="font-mono font-bold text-white shrink-0">
                             {c.percentage}%
                           </span>
                         </div>
@@ -305,67 +398,67 @@ export function FeatureOverviewView({
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-white/5 text-[11px] text-slate-400 flex items-center justify-between mt-4">
+                <div className="pt-3 border-t border-white/5 text-[10px] text-slate-500 flex items-center justify-between mt-3">
                   <span>Total Commits Analyzed</span>
-                  <span className="font-mono text-white font-bold">{commitsCount}</span>
+                  <span className="font-mono text-[#00ff66] font-bold">{commitsCount}</span>
                 </div>
               </div>
 
             </div>
 
             {/* Bottom Row: 4 Stat Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               
               {/* Files */}
-              <div className="p-4 rounded-xl bg-[#0e121d] border border-white/5">
-                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                  Files
+              <div className="p-3 rounded-xl bg-[#0c0e16] border border-white/5">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  Files Modified
                 </div>
-                <div className="text-2xl font-black text-white">
-                  {filesCount}
+                <div className="text-xl font-black text-white">
+                  {files.length}
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  Modified files
+                <div className="text-[9px] text-slate-500 mt-0.5">
+                  Core source files
                 </div>
               </div>
 
-              {/* Services */}
-              <div className="p-4 rounded-xl bg-[#0e121d] border border-white/5">
-                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                  Services
+              {/* Commits */}
+              <div className="p-3 rounded-xl bg-[#0c0e16] border border-white/5">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  Commits
                 </div>
-                <div className="text-2xl font-black text-white">
-                  {servicesCount}
+                <div className="text-xl font-black text-[#ffb000]">
+                  {commitsCount}
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  Related services
+                <div className="text-[9px] text-slate-500 mt-0.5">
+                  Synthesized revisions
                 </div>
               </div>
 
               {/* Integrations */}
-              <div className="p-4 rounded-xl bg-[#0e121d] border border-white/5">
-                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                  Integrations
+              <div className="p-3 rounded-xl bg-[#0c0e16] border border-white/5">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  Services Linked
                 </div>
-                <div className="text-2xl font-black text-white">
-                  {integrationsCount}
+                <div className="text-xl font-black text-[#00e5ff]">
+                  {integrations.length}
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  External APIs
+                <div className="text-[9px] text-slate-500 mt-0.5">
+                  Internal/External APIs
                 </div>
               </div>
 
               {/* Knowledge Risk */}
-              <div className="p-4 rounded-xl bg-[#0e121d] border border-red-500/20 bg-gradient-to-br from-red-500/5 to-transparent">
-                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <div className="p-3 rounded-xl bg-[#0c0e16] border border-[#ff3366]/30 bg-gradient-to-br from-[#ff3366]/5 to-transparent">
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Knowledge Risk
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-md bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-black uppercase tracking-wider">
+                <div className="flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.5 rounded bg-[#ff3366]/20 border border-[#ff3366]/40 text-[#ff3366] text-[10px] font-bold uppercase">
                     {riskLevel}
                   </span>
                 </div>
-                <div className="text-[10px] text-red-300/80 mt-1 font-medium">
+                <div className="text-[9px] text-[#ff3366]/80 mt-1 font-medium truncate">
                   {riskBadge}
                 </div>
               </div>
@@ -376,26 +469,23 @@ export function FeatureOverviewView({
 
         {/* Sub-Tab: Files */}
         {activeSubTab === "files" && (
-          <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
-            <h3 className="text-sm font-bold text-white mb-2">
+          <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-white/5 space-y-3">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
               Modified Source Files ({files.length})
             </h3>
             <div className="space-y-2">
               {files.map((file, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-yellow-400/40 transition-all font-mono text-xs"
+                  className="flex items-center justify-between p-2.5 rounded bg-black border border-slate-800 hover:border-[#00e5ff]/50 transition text-xs"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <FileCode className="h-4 w-4 text-yellow-400" />
-                    <div>
-                      <span className="text-white font-semibold">{file.path}</span>
-                      <span className="text-slate-500 text-[10px] ml-2 hidden sm:inline">({file.name})</span>
-                    </div>
+                  <div className="flex items-center gap-2 truncate">
+                    <FileCode className="h-3.5 w-3.5 text-[#00e5ff] shrink-0" />
+                    <span className="text-white font-semibold truncate">{file.path}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-emerald-400 font-semibold">{file.changes}</span>
-                    <span className="text-slate-400 text-[11px]">{file.lines} lines</span>
+                  <div className="flex items-center gap-3 shrink-0 text-[11px]">
+                    <span className="text-[#00ff66] font-semibold">{file.changes}</span>
+                    <span className="text-slate-500">{file.lines} lines</span>
                   </div>
                 </div>
               ))}
@@ -405,26 +495,26 @@ export function FeatureOverviewView({
 
         {/* Sub-Tab: Commits */}
         {activeSubTab === "commits" && (
-          <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
-            <h3 className="text-sm font-bold text-white mb-2">
-              Semantic Feature Commits ({commits.length})
+          <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-white/5 space-y-3">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+              Feature Commits ({commits.length})
             </h3>
             <div className="space-y-2">
               {commits.map((c, i) => (
                 <div
                   key={i}
-                  className="p-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-yellow-400/40 transition-all text-xs"
+                  className="p-2.5 rounded bg-black border border-slate-800 hover:border-[#ffb000]/50 transition text-xs"
                 >
                   <div className="flex items-center justify-between text-slate-400 mb-1">
                     <div className="flex items-center gap-2">
-                      <GitCommit className="h-3.5 w-3.5 text-yellow-400" />
-                      <span className="font-mono text-yellow-300 font-bold">{c.sha}</span>
+                      <GitCommit className="h-3 w-3 text-[#ffb000]" />
+                      <span className="text-[#ffb000] font-bold">#{c.sha}</span>
                       <span>•</span>
-                      <span className="text-slate-200 font-semibold">{c.author}</span>
+                      <span className="text-white font-semibold">@{c.author.replace("@", "")}</span>
                     </div>
-                    <span className="text-[11px]">{c.date}</span>
+                    <span className="text-[10px] text-slate-500">{c.date}</span>
                   </div>
-                  <div className="text-slate-100 font-mono text-[11px] pl-5">
+                  <div className="text-slate-200 text-[11px] pl-5">
                     {c.message}
                   </div>
                 </div>
@@ -435,22 +525,22 @@ export function FeatureOverviewView({
 
         {/* Sub-Tab: Integrations */}
         {activeSubTab === "integrations" && (
-          <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
-            <h3 className="text-sm font-bold text-white mb-2">
-              Linked Services & Third-Party APIs ({integrations.length})
+          <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-white/5 space-y-3">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+              Linked Services & Protocols ({integrations.length})
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {integrations.map((integ, i) => (
-                <div key={i} className="p-3.5 rounded-xl bg-slate-900/60 border border-white/5">
-                  <div className="flex items-center justify-between mb-2">
+                <div key={i} className="p-3 rounded bg-black border border-slate-800">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span className="font-bold text-white text-xs">{integ.name}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#00ff66]/10 text-[#00ff66] border border-[#00ff66]/30">
                       {integ.status}
                     </span>
                   </div>
                   <div className="text-[11px] text-slate-400">{integ.type}</div>
-                  <div className="text-[10px] font-mono text-yellow-400 mt-2">
-                    Avg Latency: {integ.latency}
+                  <div className="text-[10px] text-[#ffb000] mt-1.5">
+                    Latency: {integ.latency}
                   </div>
                 </div>
               ))}

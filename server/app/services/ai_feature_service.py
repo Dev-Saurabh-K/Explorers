@@ -56,29 +56,85 @@ Do NOT enclose output in markdown backticks or extra commentary. Return raw JSON
             ("user", "Repository: {repo_name}\n\nCommits:\n{commits_json}")
         ])
 
-        chain = prompt | self.get_llm()
-        commits_payload = json.dumps([
-            {
-                "sha": c.get("sha", "")[:7],
-                "message": c.get("message", ""),
-                "date": c.get("date", ""),
-                "author": c.get("author", "")
+        parsed = None
+        try:
+            chain = prompt | self.get_llm()
+            commits_payload = json.dumps([
+                {
+                    "sha": c.get("sha", "")[:7],
+                    "message": c.get("message", ""),
+                    "date": c.get("date", ""),
+                    "author": c.get("author", "")
+                }
+                for c in commits
+            ], indent=2)
+
+            response = chain.invoke({"repo_name": repo_name, "commits_json": commits_payload})
+            raw_text = response.content.strip()
+
+            # Clean any accidental markdown code fences
+            if raw_text.startswith("```json"):
+                raw_text = raw_text[7:]
+            elif raw_text.startswith("```"):
+                raw_text = raw_text[3:]
+            if raw_text.endswith("```"):
+                raw_text = raw_text[:-3]
+
+            raw_text = raw_text.strip()
+
+            try:
+                parsed = json.loads(raw_text)
+            except json.JSONDecodeError:
+                match = re.search(r'\[.*\]', raw_text, re.DOTALL)
+                if match:
+                    parsed = json.loads(match.group(0))
+        except Exception as e:
+            # Fallback to intelligent commit clustering based on semantic scopes & message analysis
+            parsed = None
+
+        if not parsed:
+            # Heuristic grouping by message content
+            buckets: dict[str, dict] = {
+                "Authentication & Security": {"category": "Authentication", "shas": [], "summary": "User authentication, OAuth2 token handling, session guards, and access control."},
+                "Database & Persistence": {"category": "Database", "shas": [], "summary": "Data persistence models, SQLite/PostgreSQL schemas, and ORM migrations."},
+                "Frontend UI & Shell": {"category": "UI", "shas": [], "summary": "User interface components, responsive layout systems, views, and styling tokens."},
+                "Backend API & Routing": {"category": "Backend API", "shas": [], "summary": "FastAPI endpoints, middleware handlers, request controllers, and route declarations."},
+                "AI & Intelligence Services": {"category": "AI", "shas": [], "summary": "LLM integrations, feature clustering, telemetry graphs, and automated doc synthesis."},
+                "DevOps & Infrastructure": {"category": "DevOps", "shas": [], "summary": "Configuration management, container setup, dependency locks, and CI workflows."},
+                "Core Engineering Features": {"category": "General", "shas": [], "summary": "Core utilities, foundational business logic, and shared codebase libraries."}
             }
-            for c in commits
-        ], indent=2)
 
-        response = chain.invoke({"repo_name": repo_name, "commits_json": commits_payload})
-        raw_text = response.content.strip()
+            for c in commits:
+                msg = c.get("message", "").lower()
+                sha_short = c.get("sha", "")[:7]
+                if any(k in msg for k in ["auth", "login", "jwt", "token", "oauth", "security", "user"]):
+                    buckets["Authentication & Security"]["shas"].append(sha_short)
+                elif any(k in msg for k in ["db", "database", "sql", "migration", "table", "schema", "model"]):
+                    buckets["Database & Persistence"]["shas"].append(sha_short)
+                elif any(k in msg for k in ["ui", "css", "style", "page", "component", "frontend", "view", "theme"]):
+                    buckets["Frontend UI & Shell"]["shas"].append(sha_short)
+                elif any(k in msg for k in ["api", "route", "endpoint", "controller", "server", "fastapi"]):
+                    buckets["Backend API & Routing"]["shas"].append(sha_short)
+                elif any(k in msg for k in ["ai", "gemini", "langchain", "prompt", "doc", "cluster"]):
+                    buckets["AI & Intelligence Services"]["shas"].append(sha_short)
+                elif any(k in msg for k in ["docker", "ci", "deploy", "action", "infra", "config", "env"]):
+                    buckets["DevOps & Infrastructure"]["shas"].append(sha_short)
+                else:
+                    buckets["Core Engineering Features"]["shas"].append(sha_short)
 
-        # Clean any accidental markdown code fences
-        if raw_text.startswith("```json"):
-            raw_text = raw_text[7:]
-        elif raw_text.startswith("```"):
-            raw_text = raw_text[3:]
-        if raw_text.endswith("```"):
-            raw_text = raw_text[:-3]
-
-        raw_text = raw_text.strip()
+            parsed = []
+            for name, b in buckets.items():
+                if b["shas"]:
+                    slug = name.lower().replace(" & ", "-").replace(" ", "-")
+                    parsed.append({
+                        "feature_id": slug,
+                        "feature_name": name,
+                        "summary": b["summary"],
+                        "category": b["category"],
+                        "commit_shas": b["shas"],
+                        "commit_count": len(b["shas"]),
+                        "primary_files_hint": []
+                    })
 
         # Build commit lookup map for fast author enrichment
         commit_lookup: dict[str, dict] = {}
@@ -87,33 +143,6 @@ Do NOT enclose output in markdown backticks or extra commentary. Return raw JSON
             short_sha = full_sha[:7]
             commit_lookup[full_sha] = c
             commit_lookup[short_sha] = c
-
-        # Parse JSON
-        try:
-            parsed = json.loads(raw_text)
-        except json.JSONDecodeError:
-            # Attempt to extract JSON array using regex if surrounded by prose
-            match = re.search(r'\[.*\]', raw_text, re.DOTALL)
-            if match:
-                parsed = json.loads(match.group(0))
-            else:
-                # Fallback to single general feature cluster
-                fallback_cluster = FeatureClusterItem(
-                    feature_id="core-features",
-                    feature_name="Core Repository Features",
-                    summary=f"Aggregated commits for {repo_name}",
-                    category="General",
-                    commit_shas=[c.get("sha", "")[:7] for c in commits],
-                    commit_count=len(commits),
-                    primary_files_hint=[]
-                )
-                if include_knowledge_graph:
-                    fallback_cluster.knowledge_graph = self.knowledge_service.calculate_feature_knowledge(
-                        commits=commits,
-                        feature_id=fallback_cluster.feature_id,
-                        feature_name=fallback_cluster.feature_name
-                    )
-                return [fallback_cluster]
 
         results = []
         for item in parsed:

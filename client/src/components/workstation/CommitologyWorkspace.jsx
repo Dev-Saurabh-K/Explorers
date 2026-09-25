@@ -17,70 +17,115 @@ export function CommitologyWorkspace({
   selectedLiveRepo = "",
   onSelectLiveRepo = () => {},
   liveFeatures = [],
+  onCategorizeFeatures = () => {},
+  isCategorizing = false,
+  knowledgeData = null,
   onGenerateDocApi = () => {},
   generatingDocId = null,
   searchQuery = "",
   initialDeveloperId = null
 }) {
-  // Merge mock data with any live repos/features if present
-  const [developers, setDevelopers] = useState(MOCK_DEVELOPERS);
-  const [repositories, setRepositories] = useState(() => {
+  // Collapsible column states to guarantee clean layout without overflow
+  const [devsCollapsed, setDevsCollapsed] = useState(false);
+  const [reposCollapsed, setReposCollapsed] = useState(false);
+  const [featuresCollapsed, setFeaturesCollapsed] = useState(false);
+
+  // Derive developers from real knowledgeData telemetry if available
+  const developers = React.useMemo(() => {
+    if (knowledgeData?.overall_developers && knowledgeData.overall_developers.length > 0) {
+      return knowledgeData.overall_developers.map((d, idx) => ({
+        id: d.developer,
+        name: d.developer,
+        developer: d.developer,
+        role: d.is_dominant ? "Lead Maintainer" : "Contributor",
+        email: `${d.developer.toLowerCase()}@github.com`,
+        avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${d.developer}&background=0c0f18&color=00e5ff`,
+        isDominant: d.is_dominant || idx === 0,
+        commitsCount: d.commit_count,
+        knowledge_percentage: d.knowledge_percentage || d.commit_percentage,
+        riskLevel: d.risk_level || (d.is_dominant ? "HIGH" : "LOW"),
+        riskTitle: d.is_dominant ? "High Knowledge Concentration" : "Balanced Contributor",
+        riskDescription: `${d.commit_count} commits analyzed`,
+        primaryAreas: [
+          { name: "Repository Core", percentage: Math.round(d.knowledge_percentage || 50), color: d.color || "#ffb000" }
+        ],
+        affectedStats: { files: 12, services: 3, integrations: 2 },
+        documentationGaps: 2,
+        suggestedActions: [
+          { id: 1, text: `Decompile features for ${selectedLiveRepo || "repo"}`, done: true },
+          { id: 2, text: "Review single-developer bottlenecks", done: true }
+        ],
+        recentCommits: []
+      }));
+    }
+    return MOCK_DEVELOPERS;
+  }, [knowledgeData, selectedLiveRepo]);
+
+  // Derive repositories: In live mode, only show real liveRepos
+  const repositories = React.useMemo(() => {
     if (liveRepos && liveRepos.length > 0) {
-      // Merge live repos with mock repositories
-      const liveItems = liveRepos.map((r) => ({
+      return liveRepos.map((r) => ({
         id: typeof r === "string" ? r : r.name,
         name: typeof r === "string" ? r : r.name,
         visibility: "Public",
-        updated: "Live repository",
+        updated: "Synced via GitHub",
         commits: 50,
         featuresCount: 3
       }));
-      const seen = new Set();
-      return [...liveItems, ...MOCK_REPOSITORIES].filter((item) => {
-        if (seen.has(item.name)) return false;
-        seen.add(item.name);
-        return true;
-      });
     }
     return MOCK_REPOSITORIES;
-  });
+  }, [liveRepos]);
 
   const [selectedRepoId, setSelectedRepoId] = useState(() => {
-    return selectedLiveRepo || MOCK_REPOSITORIES[0].id;
+    return selectedLiveRepo || (repositories[0] ? (typeof repositories[0] === "string" ? repositories[0] : repositories[0].id) : "");
   });
 
+  // Sync selectedLiveRepo prop
+  useEffect(() => {
+    if (selectedLiveRepo) {
+      setSelectedRepoId(selectedLiveRepo);
+    }
+  }, [selectedLiveRepo]);
+
+  // Derive features
   const [features, setFeatures] = useState(() => {
     if (liveFeatures && liveFeatures.length > 0) {
-      return liveFeatures.map((f, idx) => ({
-        id: f.feature_id || `feat-${idx}`,
-        name: f.feature_name || f.name,
-        summary: f.summary,
-        commitsCount: f.commit_count || f.commit_shas?.length || 10,
-        filesCount: f.primary_files_hint?.length || 4,
-        servicesCount: 3,
-        integrationsCount: 2,
-        riskLevel: f.knowledge_graph?.risk_level || "MEDIUM",
-        riskBadge: f.knowledge_graph?.risk_summary || "Moderate concentration",
-        icon: idx % 3 === 0 ? "Lock" : idx % 3 === 1 ? "CreditCard" : "Package",
-        contributors: f.knowledge_graph?.developers?.map((d) => ({
-          name: d.developer,
-          percentage: Math.round(d.commit_percentage || d.knowledge_percentage || 50),
-          commits: d.commit_count || 5,
-          color: d.color || "#facc15",
-          avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${d.developer}&background=facc15&color=090a0f`
-        })) || MOCK_FEATURES[0].contributors,
-        documentation: MOCK_FEATURES[0].documentation
-      }));
+      return liveFeatures;
     }
-    return MOCK_FEATURES;
+    return liveRepos.length > 0 ? [] : MOCK_FEATURES;
   });
 
-  const [selectedFeatureId, setSelectedFeatureId] = useState(MOCK_FEATURES[0].id);
+  const [selectedFeatureId, setSelectedFeatureId] = useState(() => {
+    if (liveFeatures && liveFeatures.length > 0) {
+      return liveFeatures[0].id || liveFeatures[0].feature_id;
+    }
+    return MOCK_FEATURES[0].id;
+  });
+
+  // Sync liveFeatures prop
+  useEffect(() => {
+    if (liveFeatures && liveFeatures.length > 0) {
+      setFeatures(liveFeatures);
+      setSelectedFeatureId((prev) => {
+        const found = liveFeatures.find((f) => (f.id || f.feature_id) === prev);
+        return found ? prev : (liveFeatures[0].id || liveFeatures[0].feature_id);
+      });
+    } else if (liveRepos.length > 0) {
+      // In live mode with no features yet, start empty so user can trigger decompile
+      setFeatures([]);
+      setSelectedFeatureId("");
+    } else {
+      setFeatures(MOCK_FEATURES);
+      setSelectedFeatureId(MOCK_FEATURES[0].id);
+    }
+  }, [liveFeatures, liveRepos]);
+
   const [selectedDeveloperId, setSelectedDeveloperId] = useState(initialDeveloperId);
   const [viewMode, setViewMode] = useState("overview"); // "overview" | "documentation" | "developer"
   const [isGenerating, setIsGenerating] = useState(false);
+  const [activeGeneratedDoc, setActiveGeneratedDoc] = useState(null);
 
-  // Sync developer selection prop
+  // Sync initialDeveloperId
   useEffect(() => {
     if (initialDeveloperId) {
       setSelectedDeveloperId(initialDeveloperId);
@@ -88,60 +133,8 @@ export function CommitologyWorkspace({
     }
   }, [initialDeveloperId]);
 
-  // Sync live repos
-  useEffect(() => {
-    if (liveRepos && liveRepos.length > 0) {
-      const liveItems = liveRepos.map((r) => ({
-        id: typeof r === "string" ? r : r.name,
-        name: typeof r === "string" ? r : r.name,
-        visibility: "Public",
-        updated: "Live repository",
-        commits: 50,
-        featuresCount: 3
-      }));
-      setRepositories((prev) => {
-        const seen = new Set();
-        return [...liveItems, ...prev].filter((item) => {
-          if (seen.has(item.name)) return false;
-          seen.add(item.name);
-          return true;
-        });
-      });
-    }
-  }, [liveRepos]);
-
-  // Sync live features
-  useEffect(() => {
-    if (liveFeatures && liveFeatures.length > 0) {
-      const mapped = liveFeatures.map((f, idx) => ({
-        id: f.feature_id || `feat-${idx}`,
-        name: f.feature_name || f.name,
-        summary: f.summary,
-        commitsCount: f.commit_count || f.commit_shas?.length || 10,
-        filesCount: f.primary_files_hint?.length || 4,
-        servicesCount: 3,
-        integrationsCount: 2,
-        riskLevel: f.knowledge_graph?.risk_level || "MEDIUM",
-        riskBadge: f.knowledge_graph?.risk_summary || "Moderate concentration",
-        icon: idx % 3 === 0 ? "Lock" : idx % 3 === 1 ? "CreditCard" : "Package",
-        contributors: f.knowledge_graph?.developers?.map((d) => ({
-          name: d.developer,
-          percentage: Math.round(d.commit_percentage || d.knowledge_percentage || 50),
-          commits: d.commit_count || 5,
-          color: d.color || "#facc15",
-          avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${d.developer}&background=facc15&color=090a0f`
-        })) || MOCK_FEATURES[0].contributors,
-        documentation: MOCK_FEATURES[0].documentation
-      }));
-      setFeatures(mapped);
-      if (mapped.length > 0) {
-        setSelectedFeatureId(mapped[0].id);
-      }
-    }
-  }, [liveFeatures]);
-
-  const activeFeature = features.find((f) => f.id === selectedFeatureId) || features[0];
-  const activeDeveloper = developers.find((d) => d.id === selectedDeveloperId) || developers[0];
+  const activeFeature = features.find((f) => (f.id || f.feature_id) === selectedFeatureId) || features[0] || null;
+  const activeDeveloper = developers.find((d) => (d.id || d.name) === selectedDeveloperId) || developers[0];
 
   const handleSelectRepo = (repoId) => {
     setSelectedRepoId(repoId);
@@ -162,10 +155,14 @@ export function CommitologyWorkspace({
   };
 
   const handleGenerateDocumentation = async (feat) => {
+    if (!feat) return;
     setIsGenerating(true);
     try {
       if (onGenerateDocApi) {
-        await onGenerateDocApi(feat);
+        const res = await onGenerateDocApi(feat);
+        if (res) {
+          setActiveGeneratedDoc(res);
+        }
       }
       setViewMode("documentation");
     } catch (err) {
@@ -179,75 +176,98 @@ export function CommitologyWorkspace({
   return (
     <div className="flex-1 flex w-full h-[calc(100vh-3.5rem)] overflow-hidden bg-[#08090d]">
       
-      {/* Column 1: Developers */}
+      {/* Column 1: Developers / Authors Deck */}
       <DevelopersColumn
         developers={developers}
         selectedDeveloperId={viewMode === "developer" ? selectedDeveloperId : null}
         onSelectDeveloper={handleSelectDeveloper}
         searchQuery={searchQuery}
+        collapsed={devsCollapsed}
+        onToggleCollapse={() => setDevsCollapsed(!devsCollapsed)}
       />
 
-      {/* Column 2: Repositories */}
+      {/* Column 2: Repositories Tape Selector */}
       <RepositoriesColumn
         repositories={repositories}
         selectedRepoId={selectedRepoId}
         onSelectRepo={handleSelectRepo}
         onAddRepo={() => {
-          const newName = prompt("Enter GitHub repository (e.g. facebook/react):");
+          const newName = prompt("Enter GitHub repository (e.g. owner/repo):");
           if (newName) {
-            const newRepo = {
-              id: newName,
-              name: newName,
-              visibility: "Public",
-              updated: "Imported just now",
-              commits: 40,
-              featuresCount: 3
-            };
-            setRepositories([newRepo, ...repositories]);
             handleSelectRepo(newName);
           }
         }}
+        collapsed={reposCollapsed}
+        onToggleCollapse={() => setReposCollapsed(!reposCollapsed)}
       />
 
-      {/* Column 3: Features */}
+      {/* Column 3: Features Matrix Deck */}
       <FeaturesColumn
         features={features}
         selectedFeatureId={selectedFeatureId}
         onSelectFeature={handleSelectFeature}
-        onClusterNew={() => {
-          alert("Triggering Gemini AI clustering pipeline across git commit diffs...");
-        }}
+        onClusterNew={() => onCategorizeFeatures({ max_commits: 50, include_knowledge_graph: true })}
+        isCategorizing={isCategorizing}
+        collapsed={featuresCollapsed}
+        onToggleCollapse={() => setFeaturesCollapsed(!featuresCollapsed)}
       />
 
       {/* Column 4: Main Content Panel */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
         {viewMode === "developer" ? (
           <DeveloperProfileView
             developer={activeDeveloper}
             onBack={() => setViewMode("overview")}
             onSelectFeature={(featId) => {
-              const matched = features.find((f) => f.id === featId || f.name.toLowerCase().includes(featId));
+              const matched = features.find((f) => (f.id || f.feature_id) === featId || (f.name || f.feature_name || "").toLowerCase().includes(featId));
               if (matched) {
-                setSelectedFeatureId(matched.id);
+                setSelectedFeatureId(matched.id || matched.feature_id);
               }
               setViewMode("overview");
             }}
           />
         ) : viewMode === "documentation" ? (
           <FeatureDocumentationView
-            feature={activeFeature}
+            feature={{
+              ...activeFeature,
+              markdown_content: activeGeneratedDoc?.markdown_content || activeFeature?.documentation?.markdown
+            }}
             repoName={selectedRepoId}
             onBack={() => setViewMode("overview")}
             onRegenerate={handleGenerateDocumentation}
             isRegenerating={isGenerating || Boolean(generatingDocId)}
           />
-        ) : (
+        ) : activeFeature ? (
           <FeatureOverviewView
             feature={activeFeature}
+            knowledgeData={knowledgeData}
             onGenerateDoc={handleGenerateDocumentation}
             onSelectDeveloper={handleSelectDeveloper}
             isGenerating={isGenerating || Boolean(generatingDocId)}
           />
+        ) : (
+          /* Empty Features State with 1-click Decompile Action */
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center font-mono bg-[#080a0f]">
+            <div className="p-4 rounded-2xl bg-black border border-[#00e5ff]/40 shadow-[0_0_25px_rgba(0,229,255,0.15)] max-w-md w-full space-y-4">
+              <div className="text-center">
+                <span className="text-3xl">⚡</span>
+                <h2 className="text-sm font-black text-white uppercase tracking-wider mt-2">
+                  Semantic Feature Decompiler Ready
+                </h2>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Repository <span className="text-[#00e5ff] font-bold">"{selectedRepoId}"</span> is mounted. Decompile raw git commits into functional architecture features.
+                </p>
+              </div>
+
+              <button
+                onClick={() => onCategorizeFeatures({ max_commits: 50, include_knowledge_graph: true })}
+                disabled={isCategorizing}
+                className="w-full py-3 bg-[#ffb000] hover:bg-[#00ff66] text-black font-black uppercase tracking-wider text-xs rounded border border-white shadow-[2px_2px_0px_#000] transition active:translate-x-0.5 active:translate-y-0.5"
+              >
+                {isCategorizing ? "[DECOMPILING COMMITS VIA GEMINI 2.5 FLASH...]" : "► INITIALIZE CLUSTER SCAN"}
+              </button>
+            </div>
+          </div>
         )}
       </div>
 

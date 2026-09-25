@@ -29,7 +29,9 @@ export function Navbar({
   onSearchChange = () => {},
   theme = "cyber-yellow",
   onToggleTheme = () => {},
-  onSelectDeveloper = () => {}
+  onSelectDeveloper = () => {},
+  crtEnabled = false,
+  onToggleCrt = () => {}
 }) {
   const [serverStatus, setServerStatus] = useState("checking");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -123,6 +125,20 @@ export function Navbar({
                 Telemetry
               </button>
             </div>
+
+            {/* CRT Scanline Toggle */}
+            <button
+              onClick={onToggleCrt}
+              title="Toggle Retro CRT Scanlines"
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-mono font-bold transition border ${
+                crtEnabled
+                  ? "bg-[#00ff66]/15 text-[#00ff66] border-[#00ff66]/50 shadow-[0_0_10px_rgba(0,255,102,0.25)]"
+                  : "bg-slate-900/60 text-slate-500 border-slate-800 hover:text-slate-300"
+              }`}
+            >
+              <Terminal className="h-3 w-3" />
+              <span>CRT: {crtEnabled ? "[ON]" : "[OFF]"}</span>
+            </button>
 
             {/* Demo Mode Toggle */}
             <button
