@@ -35,7 +35,7 @@ export default function App() {
   const [token, setTokenState] = useState(getToken);
   // Default to demo mode if no token, so user can immediately experience the interactive app!
   const [demoMode, setDemoModeState] = useState(() => {
-    const val = localStorage.getItem("commitology_demo_mode");
+    const val = localStorage.getItem("gitocx_demo_mode") || localStorage.getItem("commitology_demo_mode");
     if (val === null) {
       // First visit: active demo mode enabled for instant discovery
       setDemoMode(true);
@@ -44,7 +44,6 @@ export default function App() {
     return val === "true";
   });
 
-  const [crtEnabled, setCrtEnabled] = useState(false);
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -276,11 +275,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Scanline Overlay */}
-      {crtEnabled && (
-        <div className="crt-scanlines pointer-events-none fixed inset-0 z-50 opacity-25" />
-      )}
-
       {/* Global Navbar */}
       <Navbar
         user={user}
@@ -292,8 +286,6 @@ export default function App() {
         onSelectTab={setActiveTab}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        crtEnabled={crtEnabled}
-        onToggleCrt={() => setCrtEnabled(!crtEnabled)}
         onSelectDeveloper={(devId) => {
           setSelectedDeveloperId(devId);
           setActiveTab("workspace");

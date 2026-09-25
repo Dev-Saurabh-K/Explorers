@@ -27,12 +27,12 @@ export function setToken(token) {
 
 export function isDemoMode() {
   if (typeof window === "undefined") return false;
-  return localStorage.getItem("commitology_demo_mode") === "true";
+  return (localStorage.getItem("gitocx_demo_mode") || localStorage.getItem("commitology_demo_mode")) === "true";
 }
 
 export function setDemoMode(enabled) {
   if (typeof window === "undefined") return;
-  localStorage.setItem("commitology_demo_mode", enabled ? "true" : "false");
+  localStorage.setItem("gitocx_demo_mode", enabled ? "true" : "false");
 }
 
 export async function apiRequest(endpoint, options = {}) {

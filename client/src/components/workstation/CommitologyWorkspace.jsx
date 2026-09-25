@@ -274,3 +274,5 @@ export function CommitologyWorkspace({
     </div>
   );
 }
+
+export { CommitologyWorkspace as GitOcxWorkspace };

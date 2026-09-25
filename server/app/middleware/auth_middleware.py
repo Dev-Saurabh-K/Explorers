@@ -4,7 +4,7 @@ import jwt
 
 from app.core.config import settings
 
-PUBLIC_ROUTES = {
+PUBLIC_ROUTES = [
     "/",
     "/docs",
     "/redoc",
@@ -12,7 +12,16 @@ PUBLIC_ROUTES = {
     "/auth/github",
     "/auth/github/callback",
     "/auth/logout",
-}
+]
+
+# Prefixes whose entire sub-tree is public (Swagger UI static assets, etc.)
+PUBLIC_PREFIXES = ("/docs", "/redoc", "/openapi.json")
+
+
+def _is_public(path: str) -> bool:
+    if path in PUBLIC_ROUTES:
+        return True
+    return path.startswith(PUBLIC_PREFIXES)
 
 
 async def auth_middleware(request: Request, call_next):
@@ -20,8 +29,8 @@ async def auth_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
         return await call_next(request)
 
-    # Allow public routes
-    if request.url.path in PUBLIC_ROUTES:
+    # Allow public routes and their sub-paths
+    if _is_public(request.url.path):
         return await call_next(request)
 
     authorization = request.headers.get("Authorization")

@@ -155,7 +155,7 @@ export function DocViewerModal({ doc, onClose }) {
                       <div className="my-4 rounded-xl overflow-hidden border border-slate-800 bg-[#070b13]">
                         <div className="px-4 py-1.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
                           <span>{match ? match[1] : "code"}</span>
-                          <span className="text-[10px] text-slate-500">Commitology Code</span>
+                          <span className="text-[10px] text-slate-500">GitOcx Code</span>
                         </div>
                         <pre className="p-4 overflow-x-auto text-xs font-mono text-cyan-200 leading-relaxed">
                           <code className={className} {...props}>

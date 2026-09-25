@@ -42,9 +42,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Commitology API",
+    title="GitOcx API",
     lifespan=lifespan
 )
+
+# Register auth middleware FIRST so that CORSMiddleware (registered second)
+# wraps it as the outermost layer — ensuring CORS headers are present even on 401 responses.
+app.middleware("http")(auth_middleware)
 
 # Allow CORS for development / frontend clients
 app.add_middleware(
@@ -54,8 +58,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.middleware("http")(auth_middleware)
 
 app.include_router(auth_router)
 app.include_router(github_routes)
