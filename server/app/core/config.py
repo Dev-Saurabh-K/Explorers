@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./app.db"
     frontend_url: str = "http://localhost:5173"
+    google_api_key: str = ""
 
     @property
     def github_redirect_uri(self) -> str:

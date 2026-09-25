@@ -7,11 +7,17 @@
 ## 1. Executive Summary & Project Vision
 
 ### 1.1 The Core Mission
-Modern software engineering teams write descriptive, high-quality commit messages explaining their implementation logic, architectural pivots, and bug fixes. However, this knowledge is locked away in linear, scattered Git commit logs.
+Modern software engineering teams write descriptive, high-quality commit messages explaining their architectural pivots, implementation logic, schema migrations, and bug fixes. However, this knowledge is locked away in linear, fragmented Git commit logs.
 
 **Commitology** automates the transformation of raw GitHub repository activity into polished, structured, **feature-wise engineering documentation** (`<feature_name>.md`).
 
-### 1.2 User Journey
+### 1.2 Core Workflow
+1. **GitHub Authentication**: The developer logs in via GitHub OAuth. Commitology stores the OAuth access token in the database, allowing PyGithub to make authenticated API requests with high rate limits (5,000 requests/hr).
+2. **Repository & Commit Ingestion**: The user chooses a repository. PyGithub fetches the recent commit history in bulk (commit SHAs, messages, authors, dates).
+3. **Stage 1 (Feature Categorization & Clustering)**: All commit messages are passed together to Gemini LLM (`gemini-2.5-flash` or `gemini-1.5-flash`). The AI clusters related commits into cohesive product features (e.g. *OAuth Authentication*, *Database Persistence*, *Data Ingestion Service*).
+4. **Stage 2 (Feature Documentation Synthesis - `<feature_name>.md`)**: When the user selects a specific feature, the backend extracts the full diff context (impacted files, patches, commit descriptions) for only those commits belonging to that feature. The AI synthesizes this context into a comprehensive, publication-grade `<feature_name>.md`.
+
+### 1.3 User Journey Sequence Diagram
 ```mermaid
 sequenceDiagram
     autonumber
@@ -30,15 +36,15 @@ sequenceDiagram
     API-->>FE: Redirect with JWT Bearer Token
 
     User->>FE: Selects Repository
-    FE->>API: GET /github/repos & commits
+    FE->>API: GET /github/repos & /github/repo/commits
     API->>GH: Fetch repo commit history via PyGithub
-    API-->>FE: Return commits
+    API-->>FE: Return repository commits
 
     User->>FE: Click "Analyze Features"
     FE->>API: POST /ai/features/categorize
     API->>GH: Retrieve commit messages & metadata
-    API->>AI: Cluster commits into distinct product features
-    AI-->>API: Return categorized features & commit mappings
+    API->>AI: Bulk cluster commits into distinct product features
+    AI-->>API: Return categorized features & commit SHA mappings
     API-->>FE: Display feature list
 
     User->>FE: Select specific feature
@@ -53,17 +59,17 @@ sequenceDiagram
 
 ## 2. System Architecture & Component Landscape
 
-The system is organized around a FastAPI backend serving as an API Gateway, communicating with GitHub using PyGithub and orchestration with Google Gemini through LangChain.
+The system is organized around a FastAPI backend serving as an API Gateway, communicating with GitHub using PyGithub and orchestrating Google Gemini through LangChain.
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer ["Client Layer (d:/developement/hacknex/client)"]
+    subgraph ClientLayer ["Client Layer (Explorers/client)"]
         UI["React 18 + Vite + Tailwind CSS"]
         AuthHook["Auth Token Handler (localStorage / Cookie)"]
         UI --> AuthHook
     end
 
-    subgraph APIGateway ["FastAPI API Gateway (d:/developement/hacknex/server)"]
+    subgraph APIGateway ["FastAPI API Gateway (Explorers/server)"]
         Main["app/main.py (App Lifespan, CORS, Middleware)"]
         AuthMiddleware["app/middleware/auth_middleware.py (JWT Bearer Guard)"]
         Security["app/core/security.py (JWT encode/decode, get_current_user)"]
@@ -71,7 +77,7 @@ flowchart TD
         
         AuthRoutes["app/routes/auth_routes.py"]
         GithubRoutes["app/routes/github_routes.py"]
-        AIRoutes["app/routes/ai_routes.py (To be implemented)"]
+        AIRoutes["app/routes/ai_routes.py (AI Endpoints)"]
         
         Main --> AuthMiddleware
         AuthMiddleware --> AuthRoutes
@@ -83,7 +89,7 @@ flowchart TD
         AuthService["app/services/auth_service.py (OAuth orchestration)"]
         GithubService["app/services/github_service.py (HTTP OAuth token exchange)"]
         GithubFunctions["app/services/github_functions.py (PyGithub SDK Wrapper)"]
-        AIService["aiservice/ (LangChain + Gemini 3.5/Flash Processing)"]
+        AIService["app/services/ (LangChain + Gemini Processing)"]
         
         AuthRoutes --> AuthService
         AuthService --> GithubService
@@ -115,15 +121,15 @@ flowchart TD
 
 ### 3.1 Directory Structure
 ```
-d:\developement\hacknex\server\
+Explorers/server/
 ├── .env                              # Environment configurations (OAuth credentials, DB URL, JWT Secret)
 ├── app.db                            # SQLite database instance
 ├── pyproject.toml                    # UV / Pip Project dependencies
 ├── uv.lock                           # UV lockfile
 ├── README.md                         # Server README
 │
-├── aiservice/                        # AI Processing Module (Incubation)
-│   └── doc.py                        # Initial prototype using LangChain + Gemini
+├── aiservice/                        # AI Processing Module (Incubating Prototype)
+│   └── doc.py                        # Initial single-file doc prototype using LangChain + Gemini
 │
 └── app/
     ├── main.py                       # FastAPI entrypoint, lifespan DB setup, CORS, routers
@@ -154,9 +160,9 @@ d:\developement\hacknex\server\
 
 ### 3.2 Authentication & User Security Flow
 
-The system authenticates users via GitHub OAuth 2.0 and issues an application-specific JWT. **Crucially, the GitHub personal/OAuth access token is persisted in the database**, allowing Commitology to make authenticated PyGithub requests with high GitHub API rate limits (5,000 requests/hr instead of 60 for unauthenticated).
+The system authenticates users via GitHub OAuth 2.0 and issues an application-specific JWT. **Crucially, the GitHub personal/OAuth access token is persisted in the database**, allowing Commitology to make authenticated PyGithub requests with high GitHub API rate limits (5,000 requests/hr instead of 60 for unauthenticated requests).
 
-#### 1. Configuration: [`app/core/config.py`](file:///d:/developement/hacknex/server/app/core/config.py)
+#### 1. Configuration: [`app/core/config.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/core/config.py)
 ```python
 class Settings(BaseSettings):
     github_client_id: str = ""
@@ -166,11 +172,12 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     database_url: str = "sqlite:///./app.db"
     frontend_url: str = "http://localhost:5173"
+    google_api_key: str = ""  # Used by LangChain Gemini integration
 ```
 > [!NOTE]
-> For the AI module, `google_api_key: str = ""` must be added to `Settings` so that `ChatGoogleGenerativeAI` can consume it from `.env`.
+> `google_api_key: str = ""` is configured in `Settings` so that `ChatGoogleGenerativeAI` can consume it from `.env`.
 
-#### 2. User Model: [`app/models/user.py`](file:///d:/developement/hacknex/server/app/models/user.py)
+#### 2. User Model: [`app/models/user.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/models/user.py)
 The `User` model stores the GitHub identity and token:
 ```python
 class User(Base):
@@ -184,14 +191,14 @@ class User(Base):
     github_access_token: Mapped[str | None] = mapped_column(String, nullable=True)
 ```
 
-#### 3. Token Resolution: [`app/core/security.py`](file:///d:/developement/hacknex/server/app/core/security.py)
+#### 3. Token Resolution: [`app/core/security.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/core/security.py)
 Endpoints obtain the current logged-in user and their `github_access_token` by injecting:
 ```python
 current_user: User = Depends(get_current_user)
 token = current_user.github_access_token
 ```
 
-#### 4. Route Protection: [`app/middleware/auth_middleware.py`](file:///d:/developement/hacknex/server/app/middleware/auth_middleware.py)
+#### 4. Route Protection: [`app/middleware/auth_middleware.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/middleware/auth_middleware.py)
 Intercepts all requests except `PUBLIC_ROUTES`:
 ```python
 PUBLIC_ROUTES = {
@@ -203,30 +210,30 @@ Any new AI routes (e.g., `/ai/*`) are automatically guarded by this middleware a
 
 ---
 
-### 3.3 GitHub Data Ingestion: [`app/services/github_functions.py`](file:///d:/developement/hacknex/server/app/services/github_functions.py)
+### 3.3 GitHub Data Ingestion: [`app/services/github_functions.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/services/github_functions.py)
 
 Existing functions utilize PyGithub (`from github import Github`):
 
 1. **`get_latest_repos(token)`**:
    - Fetches repos sorted by `pushed` descending.
-   - Returns list of `repo.full_name` strings (e.g. `["octocat/Hello-World", "owner/repo"]`).
+   - Returns a list of `repo.full_name` strings (e.g. `["octocat/Hello-World", "owner/repo"]`).
 2. **`get_repo_commits(token, repo_name)`**:
    - Accesses `g.get_repo(repo_name).get_commits()`.
-   - Returns list of dictionaries: `sha`, `message`, `author`, `date` (ISO format).
+   - Returns a list of dictionaries: `sha`, `message`, `author`, `date` (ISO format).
 3. **`get_commit_authors(token, repo_name, limit)`**:
    - Extracts unique contributors with username and avatar.
 4. **`get_commits_by_contributer(token, repo_name, contributor)`**:
    - Filters commits by contributor login.
 
-#### Routes Mapping in [`app/routes/github_routes.py`](file:///d:/developement/hacknex/server/app/routes/github_routes.py):
-- `GET /github/repos` -> Returns `list[str]`
-- `GET /github/repo/commits?repo={owner/repo}` -> Returns `list[CommitResponse]`
-- `GET /github/repo/contributors?repo={owner/repo}` -> Returns `list[ContributorsResponse]`
-- `GET /github/repo/contributor/commits?repo={owner/repo}&contributor={username}` -> Returns `list[CommitByContributorResponse]`
+#### Routes Mapping in [`app/routes/github_routes.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/routes/github_routes.py):
+- `GET /github/repos` $\rightarrow$ Returns `list[str]`
+- `GET /github/repo/commits?repo={owner/repo}` $\rightarrow$ Returns `list[CommitResponse]`
+- `GET /github/repo/contributors?repo={owner/repo}` $\rightarrow$ Returns `list[ContributorsResponse]`
+- `GET /github/repo/contributor/commits?repo={owner/repo}&contributor={username}` $\rightarrow$ Returns `list[CommitByContributorResponse]`
 
 ---
 
-### 3.4 Seed AI Implementation: [`aiservice/doc.py`](file:///d:/developement/hacknex/server/aiservice/doc.py)
+### 3.4 Seed AI Implementation: [`aiservice/doc.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/aiservice/doc.py)
 
 Currently exists as an isolated proof-of-concept:
 ```python
@@ -248,10 +255,10 @@ def committodoc(commit_message, filename, file_content):
 ```
 
 **Limitations of the current prototype:**
-1. Single-file scope: Real features span multiple commits and dozens of files.
-2. No categorization: Does not cluster commit messages into feature domains.
-3. No diff awareness: Passes raw `file_content` instead of commit diffs/patches, which easily overflows token limits on large repositories.
-4. Not connected to FastAPI: Not integrated into the routes or schemas.
+1. **Single-file scope**: Real software features span multiple commits and dozens of files.
+2. **No categorization**: Does not cluster commit messages into feature domains.
+3. **No diff awareness**: Passes raw `file_content` instead of commit diffs/patches, which easily overflows token limits on large repositories.
+4. **Not connected to FastAPI**: Not integrated into the routes or schemas.
 
 ---
 
@@ -268,13 +275,13 @@ Raw Commits from PyGithub
             ▼
 ┌───────────────────────────────────────────────┐
 │ STAGE 1: Feature Categorization (LLM)         │
-│ Analyzes commit messages & semantic intent    │
-│ Clusters into logical features                │
+│ Analyzes all commit messages in bulk          │
+│ Clusters into logical product features        │
 └───────────────────────────────────────────────┘
             │
             ▼
 Feature Catalog with Mapped Commit SHAs
-{ feature_id, name, description, commit_shas }
+{ feature_id, feature_name, summary, commit_shas }
             │
             ▼ (User selects a specific feature)
 ┌───────────────────────────────────────────────┐
@@ -303,7 +310,7 @@ Generated <feature_name>.md (Rendered in UI & Exported)
 ### 5.1 Stage 1: Commit Clustering & Feature Categorization
 
 #### The Challenge
-Commit histories can range from 10 to 5,000+ commits. Commit messages usually explain intent (e.g. `feat(auth): integrate github oauth flow`, `fix(db): add missing foreign key index on users table`).
+Commit histories can range from 10 to 500+ commits. Commit messages usually explain intent (e.g. `feat(auth): integrate github oauth flow`, `fix(db): add missing foreign key index on users table`). Passing all commit messages at once enables the LLM to understand the repository-wide evolution and cluster commits into functional feature groups.
 
 #### Implementation Strategy
 1. **Fetch Commit Corpus**:
@@ -324,7 +331,7 @@ class FeatureCluster(BaseModel):
     feature_name: str = Field(description="Human readable name, e.g., 'GitHub OAuth & User Authentication'")
     summary: str = Field(description="Concise 1-2 sentence description of what this feature encompasses.")
     category: str = Field(description="Domain tag: Authentication, Database, Frontend UI, AI Pipeline, API, Infrastructure")
-    commit_shas: List[str] = Field(description="List of full or short commit SHAs belonging to this feature")
+    commit_shas: List[str] = Field(description="List of commit SHAs belonging to this feature")
     primary_files_hint: List[str] = Field(default=[], description="Key files or directories inferred from commit messages")
 
 class FeatureCategorizationResponse(BaseModel):
@@ -415,7 +422,7 @@ def get_feature_diff_context(token: str, repo_name: str, commit_shas: list[str],
 ### 5.3 Stage 2: `<feature_name>.md` Synthesis
 
 #### Prompt Engineering for Feature Documentation
-The prompt should demand structured, professional markdown conforming to standard software engineering documentation.
+The prompt requires structured, professional markdown conforming to standard software engineering documentation.
 
 #### Prompt Template:
 ```text
@@ -441,7 +448,7 @@ Include a valid GitHub Flavored Mermaid diagram (e.g. sequenceDiagram or flowcha
 
 ## 3. Implementation Details & File Breakdown
 For each primary file modified in this feature:
-- **`path/to/file`**: Describe the exact responsibilities of this file, the changes introduced by the commits, and highlight critical functions or types.
+- `path/to/file`: Describe the exact responsibilities of this file, the changes introduced by the commits, and highlight critical functions or types.
 
 ## 4. Key Code Snippets & Explanations
 Show key code structures, class definitions, endpoints, or algorithms added, explaining the rationale behind design choices.
@@ -467,7 +474,7 @@ Here is the exact implementation structure to be integrated into `server/`:
 ### 6.1 Proposed Project Additions
 
 ```
-d:\developement\hacknex\server\
+Explorers/server/
 ├── app/
 │   ├── schemas/
 │   │   └── ai_schemas.py             # Schemas for feature clustering & doc requests
@@ -479,7 +486,7 @@ d:\developement\hacknex\server\
 ```
 
 ### 6.2 Step 1: Update Dependencies in `pyproject.toml`
-The following dependencies must be added to `server/pyproject.toml`:
+The following dependencies should be confirmed in `server/pyproject.toml`:
 ```toml
 dependencies = [
     "fastapi>=0.141.1",
@@ -502,7 +509,7 @@ uv add langchain langchain-core langchain-google-genai
 
 ---
 
-### 6.3 Step 2: Define Schemas ([`app/schemas/ai_schemas.py`](file:///d:/developement/hacknex/server/app/schemas/ai_schemas.py))
+### 6.3 Step 2: Define Schemas (`app/schemas/ai_schemas.py`)
 
 ```python
 from pydantic import BaseModel, Field
@@ -542,7 +549,7 @@ class GenerateDocResponse(BaseModel):
 
 ---
 
-### 6.4 Step 3: Implement Feature Categorization Service ([`app/services/ai_feature_service.py`](file:///d:/developement/hacknex/server/app/services/ai_feature_service.py))
+### 6.4 Step 3: Implement Feature Categorization Service (`app/services/ai_feature_service.py`)
 
 ```python
 import json
@@ -588,7 +595,7 @@ Rules:
         response = chain.invoke({"repo_name": repo_name, "commits_json": commits_payload})
         raw_text = response.content.strip()
         
-        # Clean any accidental fences
+        # Clean any accidental markdown fences
         if raw_text.startswith("```json"):
             raw_text = raw_text[7:]
         if raw_text.startswith("```"):
@@ -602,7 +609,7 @@ Rules:
 
 ---
 
-### 6.5 Step 4: Implement Documentation Generator Service ([`app/services/ai_doc_service.py`](file:///d:/developement/hacknex/server/app/services/ai_doc_service.py))
+### 6.5 Step 4: Implement Documentation Generator Service (`app/services/ai_doc_service.py`)
 
 ```python
 import json
@@ -661,7 +668,7 @@ Files Changed & Diffs:
 
 ---
 
-### 6.6 Step 5: Implement AI Routes ([`app/routes/ai_routes.py`](file:///d:/developement/hacknex/server/app/routes/ai_routes.py))
+### 6.6 Step 5: Implement AI Routes (`app/routes/ai_routes.py`)
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException
@@ -728,21 +735,33 @@ async def generate_feature_documentation(
     )
 ```
 
+Mounting in [`app/main.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/main.py):
+```python
+from app.routes.ai_routes import router as ai_router
+
+app.include_router(ai_router)
+```
+
 ---
 
 ## 7. Performance, Token Management & Error Handling
 
 ### 7.1 GitHub API Rate Limits
-- Authenticated requests via user `github_access_token` give **5,000 requests/hour**.
-- Always handle `github.RateLimitExceededException` and return a user-friendly HTTP 429 status code.
+- Authenticated requests via user `github_access_token` provide **5,000 requests/hour**.
+- Always catch `github.RateLimitExceededException` or check remaining quota:
+```python
+rate_limit = g.get_rate_limit().core
+if rate_limit.remaining < 20:
+    raise HTTPException(status_code=429, detail=f"GitHub rate limit low. Resets at {rate_limit.reset}")
+```
 
 ### 7.2 LLM Context Window Strategy
 1. **Never pass entire repository files**: Only extract changed files and individual commit patches.
-2. **Noise Truncation**: Skip binary formats, build outputs (`dist/`, `.next/`), asset images, and lockfiles (`uv.lock`, `package-lock.json`).
-3. **Patch Truncation**: Cap single file patches at 3,000–4,000 characters to prevent a single massive refactor or generated file from choking the prompt.
+2. **Noise Truncation**: Skip binary formats (`.png`, `.exe`), build outputs (`dist/`, `.next/`), and lockfiles (`uv.lock`, `package-lock.json`).
+3. **Patch Truncation**: Cap single file patches at 3,000–4,000 characters to prevent a single massive refactor or generated bundle from exhausting the prompt budget.
 
 ### 7.3 Optional Database Persistence for Caching
-To avoid expensive repetitive calls:
+To avoid expensive re-generation of documentation:
 ```mermaid
 erDiagram
     USERS ||--o{ FEATURE_DOCS : creates
@@ -763,12 +782,12 @@ Adding a `FeatureDoc` table allows instant document previews on repeat visits.
 ## 8. Step-by-Step Developer Onboarding Checklist
 
 When you are ready to write the AI module:
-- [ ] Add `GOOGLE_API_KEY` to `.env` and `app/core/config.py`.
+- [ ] Add `GOOGLE_API_KEY` to `.env` and [`app/core/config.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/core/config.py).
 - [ ] Install AI packages: `uv add langchain langchain-core langchain-google-genai`.
-- [ ] Add `get_feature_diff_context` to [`app/services/github_functions.py`](file:///d:/developement/hacknex/server/app/services/github_functions.py).
-- [ ] Create [`app/schemas/ai_schemas.py`](file:///d:/developement/hacknex/server/app/schemas/ai_schemas.py).
-- [ ] Create [`app/services/ai_feature_service.py`](file:///d:/developement/hacknex/server/app/services/ai_feature_service.py).
-- [ ] Create [`app/services/ai_doc_service.py`](file:///d:/developement/hacknex/server/app/services/ai_doc_service.py).
-- [ ] Create [`app/routes/ai_routes.py`](file:///d:/developement/hacknex/server/app/routes/ai_routes.py) and mount in [`app/main.py`](file:///d:/developement/hacknex/server/app/main.py).
+- [ ] Add `get_feature_diff_context` to [`app/services/github_functions.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/services/github_functions.py).
+- [ ] Create `app/schemas/ai_schemas.py` with `CategorizeFeaturesRequest`, `CategorizeFeaturesResponse`, `GenerateDocRequest`, and `GenerateDocResponse`.
+- [ ] Create `app/services/ai_feature_service.py` with `LLMFeatureCategorizer`.
+- [ ] Create `app/services/ai_doc_service.py` with `LLMDocGenerator`.
+- [ ] Create `app/routes/ai_routes.py` and mount in [`app/main.py`](file:///c:/Users/bky84/OneDrive/Documents/Desktop/hacknex/Explorers/server/app/main.py).
 - [ ] Test the pipeline using FastAPI interactive Swagger UI at `http://localhost:8000/docs`.
-- [ ] Connect the frontend UI to display the feature list and display the `<feature_name>.md` viewer!
+- [ ] Verify that markdown responses render valid Mermaid diagrams and code blocks for `<feature_name>.md`.

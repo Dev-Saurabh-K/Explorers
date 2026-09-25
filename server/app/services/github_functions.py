@@ -66,4 +66,73 @@ def get_commits_by_contributer(token, repo_name, contributor):
     return results
 
 
+def get_feature_diff_context(token: str, repo_name: str, commit_shas: list[str], max_patch_chars: int = 4000) -> dict:
+    """
+    Given a list of commit SHAs belonging to a feature, extracts changed files, commit messages, and diff patches.
+    Filters binary files and lockfiles to preserve LLM token context.
+    """
+    g = Github(token)
+    repo = g.get_repo(repo_name)
+
+    IGNORE_EXTENSIONS = {
+        '.lock', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.pyc',
+        '.exe', '.pdf', '.min.js', '.map', '.ico', '.woff', '.woff2', '.ttf'
+    }
+    IGNORE_FILES = {'uv.lock', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'app.db'}
+
+    files_impacted: dict[str, dict] = {}
+    commit_details: list[dict] = []
+
+    for sha in commit_shas:
+        try:
+            commit = repo.get_commit(sha)
+        except Exception:
+            continue
+
+        author_name = commit.commit.author.name if commit.commit and commit.commit.author else "Unknown"
+        author_date = commit.commit.author.date.isoformat() if commit.commit and commit.commit.author and commit.commit.author.date else ""
+        commit_message = commit.commit.message if commit.commit else ""
+
+        commit_details.append({
+            "sha": commit.sha[:7],
+            "message": commit_message,
+            "author": author_name,
+            "date": author_date
+        })
+
+        if not commit.files:
+            continue
+
+        for file in commit.files:
+            filename = file.filename
+
+            # Skip noise files or lockfiles
+            if any(filename.endswith(ext) for ext in IGNORE_EXTENSIONS) or filename in IGNORE_FILES:
+                continue
+
+            patch = file.patch or ""
+            if len(patch) > max_patch_chars:
+                patch = patch[:max_patch_chars] + "\n...[truncated]"
+
+            if filename not in files_impacted:
+                files_impacted[filename] = {
+                    "filename": filename,
+                    "status": file.status,
+                    "additions": file.additions or 0,
+                    "deletions": file.deletions or 0,
+                    "patch": patch
+                }
+            else:
+                files_impacted[filename]["additions"] += file.additions or 0
+                files_impacted[filename]["deletions"] += file.deletions or 0
+                if patch:
+                    files_impacted[filename]["patch"] += f"\n\n--- Commit {commit.sha[:7]} Patch ---\n" + patch
+
+    return {
+        "commits": commit_details,
+        "files": list(files_impacted.values())
+    }
+
+
+
 

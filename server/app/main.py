@@ -9,6 +9,7 @@ from app.models.user import User  # Ensure User model is registered
 from app.middleware.auth_middleware import auth_middleware
 from app.routes.auth_routes import router as auth_router
 from app.routes.github_routes import router as github_routes
+from app.routes.ai_routes import router as ai_routes
 
 
 @asynccontextmanager
@@ -44,6 +45,7 @@ app.middleware("http")(auth_middleware)
 
 app.include_router(auth_router)
 app.include_router(github_routes)
+app.include_router(ai_routes)
 
 
 @app.get("/", summary="Health check")
