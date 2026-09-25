@@ -3,6 +3,8 @@
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #08090d;
+    color: #f1f5f9;
   }
   
   code, pre, kbd {
@@ -12,55 +14,90 @@
 
 /* Custom dark scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(10, 12, 18, 0.8);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
-  border-radius: 4px;
+  background: rgba(250, 204, 21, 0.25);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 1);
+  background: rgba(250, 204, 21, 0.5);
 }
 
-/* Glow effects & glassmorphism */
+/* High-tech glassmorphism & Glow styling */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(14, 17, 25, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-  background: rgba(22, 30, 49, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(18, 22, 32, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-card:hover {
+  border-color: rgba(250, 204, 21, 0.3);
+}
+
+/* Yellow & Retro Neon Glows */
+.glow-yellow {
+  box-shadow: 0 0 35px -5px rgba(250, 204, 21, 0.35);
+}
+
+.glow-yellow-sm {
+  box-shadow: 0 0 15px -2px rgba(250, 204, 21, 0.3);
+}
+
+.glow-purple {
+  box-shadow: 0 0 35px -5px rgba(192, 132, 252, 0.35);
 }
 
 .glow-cyan {
-  box-shadow: 0 0 35px -5px rgba(6, 182, 212, 0.25);
-}
-
-.glow-emerald {
-  box-shadow: 0 0 35px -5px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 35px -5px rgba(34, 211, 238, 0.3);
 }
 
 .glow-rose {
-  box-shadow: 0 0 35px -5px rgba(244, 63, 94, 0.25);
+  box-shadow: 0 0 35px -5px rgba(244, 63, 94, 0.35);
 }
 
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+/* Subtle animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.animate-pulse-glow {
+  animation: pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes grid-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 40px;
+  }
+}
+
+.retro-grid-lines {
+  background-image: linear-gradient(to right, rgba(250, 204, 21, 0.15) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(250, 204, 21, 0.15) 1px, transparent 1px);
+  background-size: 32px 32px;
 }

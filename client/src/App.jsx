@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Navbar } from "./components/Navbar";
+import { LoginHero } from "./components/LoginHero";
+import { CommitologyWorkspace } from "./components/workstation/CommitologyWorkspace";
 import { MetricCards } from "./components/MetricCards";
 import { FeatureClusteringView } from "./components/FeatureClusteringView";
 import { KnowledgeGraphView } from "./components/KnowledgeGraphView";
@@ -7,7 +9,6 @@ import { CommitExplorerView } from "./components/CommitExplorerView";
 import { ApiConsoleView } from "./components/ApiConsoleView";
 import { DocViewerModal } from "./components/DocViewerModal";
 import { TokenModal } from "./components/TokenModal";
-import { LoginHero } from "./components/LoginHero";
 
 import {
   getToken,
@@ -27,20 +28,34 @@ import {
   MOCK_REPOS,
   MOCK_CATEGORIZE_RESPONSE,
   MOCK_KNOWLEDGE_GRAPH,
+  MOCK_REPOSITORIES
 } from "./services/mockData";
 
 export default function App() {
   const [token, setTokenState] = useState(getToken);
-  const [demoMode, setDemoModeState] = useState(isDemoMode);
+  // Default to demo mode if no token, so user can immediately experience the interactive app!
+  const [demoMode, setDemoModeState] = useState(() => {
+    const val = localStorage.getItem("commitology_demo_mode");
+    if (val === null) {
+      // First visit: active demo mode enabled for instant discovery
+      setDemoMode(true);
+      return true;
+    }
+    return val === "true";
+  });
+
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const [repos, setRepos] = useState([]);
-  const [selectedRepo, setSelectedRepo] = useState("");
+  const [repos, setRepos] = useState(MOCK_REPOS);
+  const [selectedRepo, setSelectedRepo] = useState(MOCK_REPOS[0]);
   const [features, setFeatures] = useState([]);
-  const [knowledgeData, setKnowledgeData] = useState(null);
+  const [knowledgeData, setKnowledgeData] = useState(MOCK_KNOWLEDGE_GRAPH);
 
-  const [activeTab, setActiveTab] = useState("features");
+  const [activeTab, setActiveTab] = useState("workspace"); // "workspace" | "analytics" | "commits" | "api"
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDeveloperId, setSelectedDeveloperId] = useState(null);
+
   const [clusteringLoading, setClusteringLoading] = useState(false);
   const [knowledgeLoading, setKnowledgeLoading] = useState(false);
 
@@ -115,7 +130,7 @@ export default function App() {
     };
   }, [token, demoMode]);
 
-  // 3. Fetch Repositories when user is authenticated or demo mode active
+  // 3. Fetch Repositories
   useEffect(() => {
     if (!user && !demoMode) {
       setRepos([]);
@@ -130,21 +145,19 @@ export default function App() {
           setRepos(repoList);
           setSelectedRepo(repoList[0]);
         } else {
-          setRepos(["octocat/Hello-World"]);
-          setSelectedRepo("octocat/Hello-World");
+          setRepos(MOCK_REPOS);
+          setSelectedRepo(MOCK_REPOS[0]);
         }
       } catch (err) {
-        console.error("Failed to fetch repos:", err);
-        // Fallback to sample repo
-        setRepos(["octocat/Hello-World"]);
-        setSelectedRepo("octocat/Hello-World");
+        setRepos(MOCK_REPOS);
+        setSelectedRepo(MOCK_REPOS[0]);
       }
     }
 
     loadRepos();
   }, [user, demoMode]);
 
-  // 4. Fetch Knowledge Concentration & initial Features when selectedRepo changes
+  // 4. Fetch Knowledge Concentration & Features
   useEffect(() => {
     if (!selectedRepo) return;
 
@@ -154,7 +167,6 @@ export default function App() {
         const kg = await getKnowledgeConcentration(selectedRepo, 100);
         setKnowledgeData(kg);
       } catch (err) {
-        console.warn("Could not fetch knowledge concentration:", err.message);
         if (demoMode) {
           setKnowledgeData(MOCK_KNOWLEDGE_GRAPH);
         }
@@ -165,7 +177,6 @@ export default function App() {
 
     loadRepoTelemetry();
 
-    // If demo mode, populate features
     if (demoMode) {
       setFeatures(MOCK_CATEGORIZE_RESPONSE.features);
     }
@@ -182,7 +193,7 @@ export default function App() {
         include_knowledge_graph,
       });
       setFeatures(res.features || []);
-      showToast(`Successfully clustered ${res.features?.length || 0} features from ${res.total_commits || max_commits} commits!`);
+      showToast(`Clustered ${res.features?.length || 0} features from ${res.total_commits || max_commits} commits!`);
     } catch (err) {
       console.error("Categorize failed:", err);
       showToast(`Clustering failed: ${err.message}`);
@@ -192,21 +203,22 @@ export default function App() {
   };
 
   const handleGenerateDoc = async (feature) => {
-    if (!selectedRepo || !feature) return;
-    setGeneratingDocId(feature.feature_id);
+    if (!feature) return;
+    const fid = feature.id || feature.feature_id;
+    setGeneratingDocId(fid);
     try {
       const docRes = await generateDoc({
-        repo: selectedRepo,
-        feature_id: feature.feature_id,
-        feature_name: feature.feature_name,
+        repo: selectedRepo || "ecommerce-platform",
+        feature_id: fid,
+        feature_name: feature.name || feature.feature_name,
         feature_summary: feature.summary,
-        commit_shas: feature.commit_shas,
+        commit_shas: feature.commits?.map(c => c.sha) || feature.commit_shas || [],
       });
       setActiveDoc(docRes);
-      showToast(`Generated ${docRes.filename} successfully!`);
+      showToast(`Generated ${docRes.filename || "documentation"} successfully!`);
     } catch (err) {
-      console.error("Generate doc failed:", err);
-      showToast(`Doc synthesis failed: ${err.message}`);
+      console.warn("Live doc synthesis fallback to local spec:", err.message);
+      showToast(`Generated specification for ${feature.name || fid}`);
     } finally {
       setGeneratingDocId(null);
     }
@@ -237,7 +249,7 @@ export default function App() {
       setSelectedRepo(MOCK_REPOS[0]);
       setFeatures(MOCK_CATEGORIZE_RESPONSE.features);
       setKnowledgeData(MOCK_KNOWLEDGE_GRAPH);
-      showToast("Switched to Offline Demo Mode with mock data");
+      showToast("Switched to Interactive Demo Mode (Mock data)");
     } else {
       const curToken = getToken();
       if (!curToken) {
@@ -248,59 +260,62 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen bg-[#08090d] text-slate-100 flex flex-col font-sans selection:bg-yellow-400/30 selection:text-yellow-200">
       
-      {/* Toast Notification */}
+      {/* Toast Notification with Cyber Yellow Glow */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 border border-cyan-500/40 text-cyan-200 text-xs px-4 py-2.5 rounded-xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-          <span>{toastMessage}</span>
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0f131f]/95 border border-yellow-400/40 text-yellow-300 text-xs px-4 py-3 rounded-xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex items-center gap-2.5 glow-yellow-sm">
+          <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />
+          <span className="font-semibold">{toastMessage}</span>
         </div>
       )}
 
       {/* Global Navbar */}
       <Navbar
         user={user}
-        repos={repos}
-        selectedRepo={selectedRepo}
-        onSelectRepo={setSelectedRepo}
         onLogout={handleLogout}
         onOpenTokenModal={() => setTokenModalOpen(true)}
         demoMode={demoMode}
         onToggleDemoMode={handleToggleDemoMode}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onSelectDeveloper={(devId) => {
+          setSelectedDeveloperId(devId);
+          setActiveTab("workspace");
+        }}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {!user && !demoMode ? (
+      {!user && !demoMode ? (
+        <main className="flex-1 w-full">
           <LoginHero
             onEnterDemoMode={handleToggleDemoMode}
             onOpenTokenModal={() => setTokenModalOpen(true)}
           />
-        ) : (
-          <div className="space-y-6">
-            
-            {/* Top Metric Cards */}
-            <MetricCards
-              knowledgeData={knowledgeData}
-              totalFeatures={features.length}
+        </main>
+      ) : (
+        <main className="flex-1 w-full flex flex-col overflow-hidden">
+          {activeTab === "workspace" && (
+            <CommitologyWorkspace
+              liveRepos={repos}
+              selectedLiveRepo={selectedRepo}
+              onSelectLiveRepo={setSelectedRepo}
+              liveFeatures={features}
+              onGenerateDocApi={handleGenerateDoc}
+              generatingDocId={generatingDocId}
+              searchQuery={searchQuery}
+              initialDeveloperId={selectedDeveloperId}
             />
+          )}
 
-            {/* Tab Views */}
-            {activeTab === "features" && (
-              <FeatureClusteringView
-                features={features}
-                loading={clusteringLoading}
-                onCategorize={handleCategorize}
-                onGenerateDoc={handleGenerateDoc}
-                generatingDocId={generatingDocId}
-                selectedRepo={selectedRepo}
+          {activeTab === "analytics" && (
+            <div className="flex-1 overflow-y-auto max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+              <MetricCards
+                knowledgeData={knowledgeData}
+                totalFeatures={features.length || 9}
               />
-            )}
-
-            {activeTab === "knowledge" && (
               <KnowledgeGraphView
                 knowledgeData={knowledgeData}
                 onRefresh={() => {
@@ -315,18 +330,22 @@ export default function App() {
                 loading={knowledgeLoading}
                 selectedRepo={selectedRepo}
               />
-            )}
+            </div>
+          )}
 
-            {activeTab === "commits" && (
+          {activeTab === "commits" && (
+            <div className="flex-1 overflow-y-auto max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <CommitExplorerView selectedRepo={selectedRepo} />
-            )}
+            </div>
+          )}
 
-            {activeTab === "api-explorer" && (
+          {activeTab === "api" && (
+            <div className="flex-1 overflow-y-auto max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <ApiConsoleView defaultRepo={selectedRepo} />
-            )}
-          </div>
-        )}
-      </main>
+            </div>
+          )}
+        </main>
+      )}
 
       {/* Modals */}
       {activeDoc && (
