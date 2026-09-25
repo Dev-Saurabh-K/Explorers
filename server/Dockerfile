@@ -1,18 +1,21 @@
-# Base image
-FROM python:3.11-slim
+# Use official Python base image (adjust if you need slim/alpine)
+FROM python:3.14.6-slim
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install uv (modern Python package manager)
+RUN pip install --no-cache-dir uv
 
-# Copy project files
+# Copy dependency files first for caching
+COPY pyproject.toml uv.lock ./
+
+# Sync dependencies into container environment
+RUN uv sync --frozen
+
+# Copy the rest of your project
 COPY . .
 
-# Expose FastAPI default port
-EXPOSE 8000
-
-# Run FastAPI with Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command (adjust to your app entrypoint)
+# Example: FastAPI with uvicorn
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
