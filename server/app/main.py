@@ -1,21 +1,34 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from sqlalchemy import inspect, text
 
 from app.database.database import Base, engine
-from app.models.user import User  # Ensure User model is registered
+from app.models.user import User
+from app.models.cached_responses import (
+    CachedRepository,
+    CachedCommit,
+    CachedContributor,
+    CachedContributorCommit,
+    CachedRepositoryKnowledgeGraph,
+    CachedFeatureKnowledgeGraph,
+    CachedFeatureCategorization,
+    CachedFeatureDoc
+)
 from app.middleware.auth_middleware import auth_middleware
 from app.routes.auth_routes import router as auth_router
 from app.routes.github_routes import router as github_routes
 from app.routes.ai_routes import router as ai_routes
 from app.routes.knowledge_routes import router as knowledge_routes
+from app.routes.sync_routes import router as sync_routes
+
+# Initialize database tables on module load to support test runners and CLI imports
+Base.metadata.create_all(bind=engine)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables on startup
+    # Ensure database tables exist on startup
     Base.metadata.create_all(bind=engine)
     # Ensure github_access_token column exists on existing tables
     inspector = inspect(engine)
@@ -29,7 +42,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Hacknex API",
+    title="Commitology API",
     lifespan=lifespan
 )
 
@@ -48,6 +61,7 @@ app.include_router(auth_router)
 app.include_router(github_routes)
 app.include_router(ai_routes)
 app.include_router(knowledge_routes)
+app.include_router(sync_routes)
 
 
 @app.get("/", summary="Health check")

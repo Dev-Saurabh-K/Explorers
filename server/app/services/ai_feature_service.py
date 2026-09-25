@@ -20,7 +20,7 @@ class LLMFeatureCategorizer:
             if not api_key:
                 raise ValueError("Google Gemini API Key is required. Please set GOOGLE_API_KEY in .env or config.")
             self._llm = ChatGoogleGenerativeAI(
-                model="gemini-2.5-flash",
+                model="gemini-3.6-flash",
                 temperature=0.1,
                 google_api_key=api_key,
             )
