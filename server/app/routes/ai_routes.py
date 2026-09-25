@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from app.models.user import User
 from app.core.security import get_current_user
+from app.database.database import get_db
 from app.schemas.ai_schemas import (
     CategorizeFeaturesRequest,
     CategorizeFeaturesResponse,
@@ -10,8 +13,9 @@ from app.schemas.ai_schemas import (
 from app.services.github_functions import get_repo_commits, get_feature_diff_context
 from app.services.ai_feature_service import LLMFeatureCategorizer
 from app.services.ai_doc_service import LLMDocGenerator
+from app.services.cache_service import CacheService
 
-router = APIRouter(prefix="/ai", tags=["AI Documentation"])
+router = APIRouter(prefix="/ai", tags=["AI Documentation & Categorization"])
 
 # Initialize service singletons lazily or on module load
 categorizer = LLMFeatureCategorizer()
@@ -21,12 +25,19 @@ doc_generator = LLMDocGenerator()
 @router.post(
     "/features/categorize",
     response_model=CategorizeFeaturesResponse,
-    summary="Analyze repository commits in bulk and cluster them into product features"
+    summary="Analyze repository commits in bulk and cluster them into product features (cached)"
 )
 async def categorize_repo_features(
     req: CategorizeFeaturesRequest,
-    current_user: User = Depends(get_current_user)
+    refresh: bool = Query(default=False, description="Force re-clustering with Gemini LLM"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+    if not refresh:
+        cached = CacheService.get_feature_categorization(db, current_user.id, req.repo)
+        if cached:
+            return cached
+
     token = current_user.github_access_token
     if not token:
         raise HTTPException(
@@ -63,6 +74,26 @@ async def categorize_repo_features(
             detail=f"AI commit clustering failed: {str(e)}"
         )
 
+    features_serialized = [f.model_dump() for f in features]
+    CacheService.set_feature_categorization(
+        db=db,
+        user_id=current_user.id,
+        repo_name=req.repo,
+        total_commits=len(scoped_commits),
+        features_data=features_serialized
+    )
+
+    # Cache feature-level knowledge graphs
+    for f in features:
+        if f.knowledge_graph:
+            CacheService.set_feature_knowledge_graph(
+                db=db,
+                user_id=current_user.id,
+                repo_name=req.repo,
+                feature_id=f.feature_id,
+                data=f.knowledge_graph.model_dump()
+            )
+
     return CategorizeFeaturesResponse(
         repo=req.repo,
         total_commits=len(scoped_commits),
@@ -73,12 +104,19 @@ async def categorize_repo_features(
 @router.post(
     "/features/generate-doc",
     response_model=GenerateDocResponse,
-    summary="Extract diffs and touched files for feature commits and synthesize <feature_name>.md"
+    summary="Extract diffs and touched files for feature commits and synthesize <feature_name>.md (cached)"
 )
 async def generate_feature_documentation(
     req: GenerateDocRequest,
-    current_user: User = Depends(get_current_user)
+    refresh: bool = Query(default=False, description="Force re-generation with Gemini LLM"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+    if not refresh:
+        cached = CacheService.get_feature_doc(db, current_user.id, req.repo, req.feature_id)
+        if cached:
+            return cached
+
     token = current_user.github_access_token
     if not token:
         raise HTTPException(
@@ -114,6 +152,16 @@ async def generate_feature_documentation(
 
     clean_id = req.feature_id.strip().lower().replace(" ", "-")
     filename = f"{clean_id}.md"
+
+    CacheService.set_feature_doc(
+        db=db,
+        user_id=current_user.id,
+        repo_name=req.repo,
+        feature_id=req.feature_id,
+        feature_name=req.feature_name,
+        filename=filename,
+        markdown_content=markdown_doc
+    )
 
     return GenerateDocResponse(
         repo=req.repo,

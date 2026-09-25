@@ -14,7 +14,7 @@ Modern software engineering teams write descriptive, high-quality commit message
 ### 1.2 Core Workflow
 1. **GitHub Authentication**: The developer logs in via GitHub OAuth. Commitology stores the OAuth access token in the database, allowing PyGithub to make authenticated API requests with high rate limits (5,000 requests/hr).
 2. **Repository & Commit Ingestion**: The user chooses a repository. PyGithub fetches the recent commit history in bulk (commit SHAs, messages, authors, dates).
-3. **Stage 1 (Feature Categorization & Clustering)**: All commit messages are passed together to Gemini LLM (`gemini-2.5-flash` or `gemini-1.5-flash`). The AI clusters related commits into cohesive product features (e.g. *OAuth Authentication*, *Database Persistence*, *Data Ingestion Service*).
+3. **Stage 1 (Feature Categorization & Clustering)**: All commit messages are passed together to Gemini LLM (`gemini-3.6-flash` or `gemini-1.5-flash`). The AI clusters related commits into cohesive product features (e.g. *OAuth Authentication*, *Database Persistence*, *Data Ingestion Service*).
 4. **Stage 2 (Feature Documentation Synthesis - `<feature_name>.md`)**: When the user selects a specific feature, the backend extracts the full diff context (impacted files, patches, commit descriptions) for only those commits belonging to that feature. The AI synthesizes this context into a comprehensive, publication-grade `<feature_name>.md`.
 
 ### 1.3 User Journey Sequence Diagram
@@ -318,7 +318,7 @@ Commit histories can range from 10 to 500+ commits. Commit messages usually expl
 2. **Commit Message Normalization**:
    - Extract `sha` (shortened to 7 chars), `message` (summary + description), `date`, and `author`.
 3. **Structured Output LLM Prompt**:
-   - Use `gemini-2.5-flash` or `gemini-1.5-flash` with structured Pydantic output.
+   - Use `gemini-3.6-flash` with structured Pydantic output.
    - Instruct the LLM to cluster the commits into distinct, cohesive features.
 
 #### Desired Pydantic Schema:
@@ -561,7 +561,7 @@ from app.schemas.ai_schemas import FeatureClusterItem
 class LLMFeatureCategorizer:
     def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             temperature=0.1,
             google_api_key=settings.google_api_key or None
         )
@@ -620,7 +620,7 @@ from app.core.config import settings
 class LLMDocGenerator:
     def __init__(self):
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             temperature=0.2,
             google_api_key=settings.google_api_key or None
         )

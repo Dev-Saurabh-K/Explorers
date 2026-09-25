@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import List, Optional
+from sqlalchemy.orm import Session
+
 from app.models.user import User
 from app.core.security import get_current_user
+from app.database.database import get_db
 from app.schemas.knowledge_schemas import (
     DeveloperConcentration,
     FeatureKnowledgeGraph,
@@ -15,6 +18,7 @@ from app.services.github_functions import (
     get_feature_diff_context,
 )
 from app.services.knowledge_service import KnowledgeConcentrationService
+from app.services.cache_service import CacheService
 
 router = APIRouter(prefix="/github/repo", tags=["Knowledge Concentration & Graph Telemetry"])
 knowledge_service = KnowledgeConcentrationService()
@@ -23,13 +27,20 @@ knowledge_service = KnowledgeConcentrationService()
 @router.get(
     "/knowledge-concentration",
     response_model=RepositoryKnowledgeGraph,
-    summary="Get repository-wide developer knowledge concentration percentages and graph data"
+    summary="Get repository-wide developer knowledge concentration percentages and graph data (cached)"
 )
 async def get_repository_knowledge_concentration(
     repo: str = Query(..., description="Repository full name, e.g. 'owner/repo'"),
     max_commits: int = Query(default=100, ge=5, le=500, description="Max commits to analyze"),
-    current_user: User = Depends(get_current_user)
+    refresh: bool = Query(default=False, description="Force refresh and recalculate knowledge metrics"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+    if not refresh:
+        cached = CacheService.get_repo_knowledge_graph(db, current_user.id, repo, graph_type="concentration")
+        if cached:
+            return cached
+
     token = current_user.github_access_token
     if not token:
         raise HTTPException(
@@ -57,18 +68,28 @@ async def get_repository_knowledge_concentration(
         all_commits=raw_commits,
         feature_breakdown=[]
     )
+    repo_dict = repo_graph.model_dump()
+    CacheService.set_repo_knowledge_graph(db, current_user.id, repo, "concentration", repo_dict)
+    CacheService.set_commits(db, current_user.id, repo, raw_commits)
     return repo_graph
 
 
 @router.post(
     "/feature-knowledge",
     response_model=FeatureKnowledgeGraph,
-    summary="Calculate knowledge concentration and graph representation for a specific feature"
+    summary="Calculate knowledge concentration and graph representation for a specific feature (cached)"
 )
 async def get_feature_knowledge(
     req: FeatureKnowledgeRequest,
-    current_user: User = Depends(get_current_user)
+    refresh: bool = Query(default=False, description="Force refresh calculation"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+    if not refresh:
+        cached = CacheService.get_feature_knowledge_graph(db, current_user.id, req.repo, req.feature_id)
+        if cached:
+            return cached
+
     token = current_user.github_access_token
     if not token:
         raise HTTPException(
@@ -103,18 +124,27 @@ async def get_feature_knowledge(
         feature_name=req.feature_name,
         diff_context=diff_context
     )
+    feature_dict = feature_graph.model_dump()
+    CacheService.set_feature_knowledge_graph(db, current_user.id, req.repo, req.feature_id, feature_dict)
     return feature_graph
 
 
 @router.post(
     "/features-knowledge-batch",
     response_model=RepositoryKnowledgeGraph,
-    summary="Batch calculate knowledge concentration across multiple features with cross-feature charts"
+    summary="Batch calculate knowledge concentration across multiple features with cross-feature charts (cached)"
 )
 async def get_batch_features_knowledge(
     req: BatchFeaturesKnowledgeRequest,
-    current_user: User = Depends(get_current_user)
+    refresh: bool = Query(default=False, description="Force refresh batch calculation"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+    if not refresh:
+        cached = CacheService.get_repo_knowledge_graph(db, current_user.id, req.repo, graph_type="batch")
+        if cached:
+            return cached
+
     token = current_user.github_access_token
     if not token:
         raise HTTPException(
@@ -164,6 +194,8 @@ async def get_batch_features_knowledge(
             feature_name=f.feature_name,
             diff_context=diff_ctx
         )
+        # Cache individual feature knowledge graph
+        CacheService.set_feature_knowledge_graph(db, current_user.id, req.repo, f.feature_id, fg.model_dump())
         feature_graphs.append(fg)
 
     repo_graph = knowledge_service.calculate_repository_knowledge(
@@ -171,19 +203,28 @@ async def get_batch_features_knowledge(
         all_commits=commit_records,
         feature_breakdown=feature_graphs
     )
+    repo_dict = repo_graph.model_dump()
+    CacheService.set_repo_knowledge_graph(db, current_user.id, req.repo, "batch", repo_dict)
     return repo_graph
 
 
 @router.get(
     "/knowledge-graph",
     response_model=RepositoryKnowledgeGraph,
-    summary="Get full repository knowledge graph with stacked bar charts and bus factor telemetry"
+    summary="Get full repository knowledge graph with stacked bar charts and bus factor telemetry (cached)"
 )
 async def get_repository_knowledge_graph(
     repo: str = Query(..., description="Repository full name, e.g. 'owner/repo'"),
     max_commits: int = Query(default=100, ge=5, le=500, description="Max commits to analyze"),
-    current_user: User = Depends(get_current_user)
+    refresh: bool = Query(default=False, description="Force refresh calculation"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+    if not refresh:
+        cached = CacheService.get_repo_knowledge_graph(db, current_user.id, repo, graph_type="full_graph")
+        if cached:
+            return cached
+
     token = current_user.github_access_token
     if not token:
         raise HTTPException(
@@ -206,7 +247,6 @@ async def get_repository_knowledge_graph(
         )
 
     # Heuristic domain clustering based on conventional commit scopes or prefixes
-    # e.g., feat(auth), fix(db), chore, ui, docs, etc.
     clusters: dict[str, list[dict]] = {}
     for c in raw_commits:
         msg = c.get("message", "").lower()
@@ -235,6 +275,7 @@ async def get_repository_knowledge_graph(
             feature_id=feat_id,
             feature_name=cat_name
         )
+        CacheService.set_feature_knowledge_graph(db, current_user.id, repo, feat_id, fg.model_dump())
         feature_graphs.append(fg)
 
     repo_graph = knowledge_service.calculate_repository_knowledge(
@@ -242,4 +283,7 @@ async def get_repository_knowledge_graph(
         all_commits=raw_commits,
         feature_breakdown=feature_graphs
     )
+    repo_dict = repo_graph.model_dump()
+    CacheService.set_repo_knowledge_graph(db, current_user.id, repo, "full_graph", repo_dict)
+    CacheService.set_commits(db, current_user.id, repo, raw_commits)
     return repo_graph
