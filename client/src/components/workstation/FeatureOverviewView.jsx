@@ -294,7 +294,7 @@ export function FeatureOverviewView({
               {/* Card 1: Contributors */}
               <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-[#00ff66]/20 shadow-xl flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3 gap-2 flex-wrap">
                     <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                       Feature Authors
                     </h3>
@@ -359,7 +359,7 @@ export function FeatureOverviewView({
               {/* Card 2: Contribution Distribution Donut Chart */}
               <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-[#00ff66]/20 shadow-xl flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3 gap-2 flex-wrap">
                     <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                       Contribution Distribution
                     </h3>
