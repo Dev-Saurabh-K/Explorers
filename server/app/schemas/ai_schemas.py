@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from app.schemas.knowledge_schemas import FeatureKnowledgeGraph
 
 
 class FeatureClusterItem(BaseModel):
@@ -10,11 +11,19 @@ class FeatureClusterItem(BaseModel):
     commit_shas: List[str] = Field(default_factory=list, description="List of commit SHAs belonging to this feature")
     commit_count: int = Field(default=0, description="Total count of commits mapped to this feature")
     primary_files_hint: List[str] = Field(default_factory=list, description="Key files or directories inferred from commits")
+    knowledge_graph: Optional[FeatureKnowledgeGraph] = Field(
+        default=None,
+        description="Developer knowledge concentration and graph representation data for this feature"
+    )
 
 
 class CategorizeFeaturesRequest(BaseModel):
     repo: str = Field(..., description="Full repository name: owner/repo")
     max_commits: Optional[int] = Field(default=50, description="Max commits to analyze in bulk")
+    include_knowledge_graph: Optional[bool] = Field(
+        default=True,
+        description="Whether to automatically compute developer knowledge concentration and graph data for each feature"
+    )
 
 
 class CategorizeFeaturesResponse(BaseModel):
