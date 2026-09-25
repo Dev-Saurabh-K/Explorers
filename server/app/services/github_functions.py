@@ -6,23 +6,65 @@ def get_latest_repos(token):
     repos = g.get_user().get_repos(sort="pushed", direction="desc")
     return [repo.full_name for repo in repos]
 
-# repo_name : owner/repo
-def get_repo_commits(token, repo_name):
+def get_repo_commits(token, repo_name, limit: int | None = None):
     g = Github(token)
 
-    repo =  g.get_repo(repo_name)
+    repo = g.get_repo(repo_name)
 
     commits = repo.get_commits()
 
     results = []
     for commit in commits:
+        author_name = commit.author.login if commit.author else (
+            commit.commit.author.name if commit.commit and commit.commit.author else "Unknown"
+        )
+        avatar_url = commit.author.avatar_url if commit.author else None
+        date_str = (
+            commit.commit.author.date.isoformat()
+            if commit.commit and commit.commit.author and commit.commit.author.date
+            else ""
+        )
         results.append({
-            "sha": commit.sha, # type: ignore
-            "message": commit.commit.message, # type: ignore
-            "author": commit.commit.author.name, # type: ignore
-            "date": commit.commit.author.date.isoformat() # type: ignore
+            "sha": commit.sha,
+            "message": commit.commit.message if commit.commit else "",
+            "author": author_name,
+            "avatar_url": avatar_url,
+            "date": date_str
         })
+        if limit and len(results) >= limit:
+            break
 
+    return results
+
+
+def get_commits_by_shas(token: str, repo_name: str, commit_shas: list[str]) -> list[dict]:
+    """
+    Fetch lightweight commit author and metadata for specific commit SHAs.
+    """
+    g = Github(token)
+    repo = g.get_repo(repo_name)
+    results = []
+    for sha in commit_shas:
+        try:
+            commit = repo.get_commit(sha)
+            author_name = commit.author.login if commit.author else (
+                commit.commit.author.name if commit.commit and commit.commit.author else "Unknown"
+            )
+            avatar_url = commit.author.avatar_url if commit.author else None
+            date_str = (
+                commit.commit.author.date.isoformat()
+                if commit.commit and commit.commit.author and commit.commit.author.date
+                else ""
+            )
+            results.append({
+                "sha": commit.sha,
+                "message": commit.commit.message if commit.commit else "",
+                "author": author_name,
+                "avatar_url": avatar_url,
+                "date": date_str
+            })
+        except Exception:
+            continue
     return results
 
 def get_commit_authors(token, repo_name, limit=None):

@@ -51,7 +51,12 @@ async def categorize_repo_features(
     scoped_commits = raw_commits[: req.max_commits]
 
     try:
-        features = categorizer.categorize_commits(req.repo, scoped_commits)
+        include_kg = True if req.include_knowledge_graph is None else req.include_knowledge_graph
+        features = categorizer.categorize_commits(
+            repo_name=req.repo,
+            commits=scoped_commits,
+            include_knowledge_graph=include_kg
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

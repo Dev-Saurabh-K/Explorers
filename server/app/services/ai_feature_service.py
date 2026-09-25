@@ -6,11 +6,13 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from app.core.config import settings
 from app.schemas.ai_schemas import FeatureClusterItem
+from app.services.knowledge_service import KnowledgeConcentrationService
 
 
 class LLMFeatureCategorizer:
     def __init__(self):
         self._llm = None
+        self.knowledge_service = KnowledgeConcentrationService()
 
     def get_llm(self):
         if self._llm is None:
@@ -24,7 +26,12 @@ class LLMFeatureCategorizer:
             )
         return self._llm
 
-    def categorize_commits(self, repo_name: str, commits: list[dict]) -> List[FeatureClusterItem]:
+    def categorize_commits(
+        self,
+        repo_name: str,
+        commits: list[dict],
+        include_knowledge_graph: bool = True
+    ) -> List[FeatureClusterItem]:
         prompt = ChatPromptTemplate.from_messages([
             ("system", """You are a Principal Software Architect analyzing a Git repository's commit history.
 Your task is to analyze all commit messages and group the commits into distinct, cohesive, high-level product features.
@@ -73,6 +80,14 @@ Do NOT enclose output in markdown backticks or extra commentary. Return raw JSON
 
         raw_text = raw_text.strip()
 
+        # Build commit lookup map for fast author enrichment
+        commit_lookup: dict[str, dict] = {}
+        for c in commits:
+            full_sha = c.get("sha", "")
+            short_sha = full_sha[:7]
+            commit_lookup[full_sha] = c
+            commit_lookup[short_sha] = c
+
         # Parse JSON
         try:
             parsed = json.loads(raw_text)
@@ -83,23 +98,45 @@ Do NOT enclose output in markdown backticks or extra commentary. Return raw JSON
                 parsed = json.loads(match.group(0))
             else:
                 # Fallback to single general feature cluster
-                return [
-                    FeatureClusterItem(
-                        feature_id="core-features",
-                        feature_name="Core Repository Features",
-                        summary=f"Aggregated commits for {repo_name}",
-                        category="General",
-                        commit_shas=[c.get("sha", "")[:7] for c in commits],
-                        commit_count=len(commits),
-                        primary_files_hint=[]
+                fallback_cluster = FeatureClusterItem(
+                    feature_id="core-features",
+                    feature_name="Core Repository Features",
+                    summary=f"Aggregated commits for {repo_name}",
+                    category="General",
+                    commit_shas=[c.get("sha", "")[:7] for c in commits],
+                    commit_count=len(commits),
+                    primary_files_hint=[]
+                )
+                if include_knowledge_graph:
+                    fallback_cluster.knowledge_graph = self.knowledge_service.calculate_feature_knowledge(
+                        commits=commits,
+                        feature_id=fallback_cluster.feature_id,
+                        feature_name=fallback_cluster.feature_name
                     )
-                ]
+                return [fallback_cluster]
 
         results = []
         for item in parsed:
             # Ensure commit_count is set
             shas = item.get("commit_shas", [])
             item["commit_count"] = item.get("commit_count") or len(shas)
-            results.append(FeatureClusterItem(**item))
+
+            # Match commits belonging to this feature
+            feature_commits = []
+            for sha in shas:
+                s_sha = sha[:7]
+                if s_sha in commit_lookup:
+                    feature_commits.append(commit_lookup[s_sha])
+                elif sha in commit_lookup:
+                    feature_commits.append(commit_lookup[sha])
+
+            feature_item = FeatureClusterItem(**item)
+            if include_knowledge_graph and feature_commits:
+                feature_item.knowledge_graph = self.knowledge_service.calculate_feature_knowledge(
+                    commits=feature_commits,
+                    feature_id=feature_item.feature_id,
+                    feature_name=feature_item.feature_name
+                )
+            results.append(feature_item)
 
         return results
