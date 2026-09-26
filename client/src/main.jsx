@@ -19,7 +19,8 @@ class ErrorBoundary extends Component {
 
   handleReset = () => {
     localStorage.removeItem("token");
-    localStorage.setItem("gitocx_demo_mode", "true");
+    localStorage.removeItem("gitocx_demo_mode");
+    localStorage.removeItem("commitology_demo_mode");
     window.location.reload();
   };
 
@@ -49,7 +50,7 @@ class ErrorBoundary extends Component {
                 onClick={this.handleReset}
                 className="flex-1 py-2 px-4 bg-yellow-400/10 border border-yellow-400/40 hover:bg-yellow-400 hover:text-black text-yellow-300 rounded-xl text-xs font-bold transition cursor-pointer"
               >
-                Reset Demo
+                Reset Session
               </button>
             </div>
           </div>

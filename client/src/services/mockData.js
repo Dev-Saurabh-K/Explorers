@@ -3,10 +3,10 @@
 
 export const MOCK_DEVELOPERS = [
   {
-    id: "rahul",
-    name: "Rahul",
+    id: "demo-developer",
+    name: "Demo Developer",
     role: "Senior Developer",
-    email: "rahul@company.com",
+    email: "developer@example.com",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
     isDominant: true,
     status: "online",
@@ -381,7 +381,7 @@ export const MOCK_FEATURES = [
     summary: "Handles user login, registration, JWT authentication, and session management.",
     lastGenerated: "25 Sep 2026, 11:42 AM",
     contributors: [
-      { name: "Rahul", percentage: 68, commits: 22, color: "#facc15", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
+      { name: "Demo Developer", percentage: 68, commits: 22, color: "#facc15", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
       { name: "Priya", percentage: 18, commits: 6, color: "#c084fc", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80" },
       { name: "Aman", percentage: 8, commits: 3, color: "#22d3ee", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80" },
       { name: "Swati", percentage: 6, commits: 1, color: "#10b981", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80" }
@@ -394,8 +394,8 @@ export const MOCK_FEATURES = [
       { name: "Session Config", path: "/src/config/session.js", changes: "+42 / -0", lines: 42 }
     ],
     commits: [
-      { sha: "7fd1a60", author: "Rahul", message: "feat(auth): add OAuth2 GitHub & Google login providers", date: "2 days ago" },
-      { sha: "6dcb09b", author: "Rahul", message: "fix(jwt): implement sliding session expiration with redis refresh", date: "4 days ago" },
+      { sha: "7fd1a60", author: "Demo Developer", message: "feat(auth): add OAuth2 GitHub & Google login providers", date: "2 days ago" },
+      { sha: "6dcb09b", author: "Demo Developer", message: "fix(jwt): implement sliding session expiration with redis refresh", date: "4 days ago" },
       { sha: "3a8f921", author: "Priya", message: "feat(security): bcrypt password hashing salt rounds calibration", date: "1 week ago" },
       { sha: "1bc8392", author: "Aman", message: "ui(auth): responsive login & multi-factor authentication modal", date: "2 weeks ago" }
     ],
@@ -473,7 +473,7 @@ The Auth Service bridges incoming client requests with persistent data layers an
     summary: "Processes credit card transactions, webhook events, and Stripe / Razorpay tokenization.",
     lastGenerated: "24 Sep 2026, 04:15 PM",
     contributors: [
-      { name: "Rahul", percentage: 72, commits: 20, color: "#facc15", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
+      { name: "Demo Developer", percentage: 72, commits: 20, color: "#facc15", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
       { name: "Priya", percentage: 18, commits: 5, color: "#c084fc", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80" },
       { name: "Divya", percentage: 10, commits: 3, color: "#10b981", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80" }
     ],
@@ -483,8 +483,8 @@ The Auth Service bridges incoming client requests with persistent data layers an
       { name: "Transaction Model", path: "/src/models/transaction.js", changes: "+160 / -10", lines: 170 }
     ],
     commits: [
-      { sha: "8921dfe", author: "Rahul", message: "feat(payment): idempotent Stripe webhook event ingestion", date: "3 days ago" },
-      { sha: "110ae94", author: "Rahul", message: "feat(billing): 3D Secure 2 authentication fallback flow", date: "5 days ago" }
+      { sha: "8921dfe", author: "Demo Developer", message: "feat(payment): idempotent Stripe webhook event ingestion", date: "3 days ago" },
+      { sha: "110ae94", author: "Demo Developer", message: "feat(billing): 3D Secure 2 authentication fallback flow", date: "5 days ago" }
     ],
     integrations: [
       { name: "Stripe API v2024", status: "Active", type: "Payment Gateway", latency: "140ms" },
@@ -527,7 +527,7 @@ The Auth Service bridges incoming client requests with persistent data layers an
     summary: "State machine managing order lifecycle from cart submission to fulfillment and tracking.",
     lastGenerated: "22 Sep 2026, 02:20 PM",
     contributors: [
-      { name: "Rahul", percentage: 55, commits: 11, color: "#facc15", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
+      { name: "Demo Developer", percentage: 55, commits: 11, color: "#facc15", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80" },
       { name: "Santosh", percentage: 30, commits: 6, color: "#c084fc", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80" },
       { name: "Karan", percentage: 15, commits: 3, color: "#22d3ee", avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80" }
     ],
@@ -536,7 +536,7 @@ The Auth Service bridges incoming client requests with persistent data layers an
       { name: "Inventory Allocator", path: "/src/services/inventory.js", changes: "+130 / -8", lines: 138 }
     ],
     commits: [
-      { sha: "3fa9121", author: "Rahul", message: "feat(order): optimistic lock for concurrent stock deduction", date: "4 days ago" }
+      { sha: "3fa9121", author: "Demo Developer", message: "feat(order): optimistic lock for concurrent stock deduction", date: "4 days ago" }
     ],
     integrations: [
       { name: "Logistics API", status: "Active", type: "Fulfillment Provider", latency: "180ms" }
@@ -817,9 +817,9 @@ The Auth Service bridges incoming client requests with persistent data layers an
 export const MOCK_USER = {
   id: 1,
   github_id: "583231",
-  username: "rahul",
-  name: "Rahul",
-  email: "rahul@company.com",
+  username: "demo-developer",
+  name: "Demo Developer",
+  email: "developer@example.com",
   avatar_url: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80"
 };
 
@@ -829,13 +829,13 @@ export const MOCK_COMMITS = [
   {
     sha: "7fd1a60b01f91b314f59955a4e4d4e80d8edf11d",
     message: "feat(auth): integrate github oauth login with jwt session support",
-    author: "Rahul",
+    author: "Demo Developer",
     date: "2026-09-24T18:30:00Z"
   },
   {
     sha: "6dcb09b5b57875f334f61aebed695e2e4193db5e",
     message: "fix(db): add missing github_access_token column in users table",
-    author: "Rahul",
+    author: "Demo Developer",
     date: "2026-09-24T17:15:00Z"
   },
   {
@@ -869,7 +869,7 @@ export const MOCK_CATEGORIZE_RESPONSE = {
       bus_factor: f.riskLevel === "HIGH" ? 1 : f.riskLevel === "MEDIUM" ? 2 : 3,
       risk_level: f.riskLevel,
       risk_summary: f.riskBadge,
-      dominant_developer: f.contributors[0]?.name || "Rahul",
+      dominant_developer: f.contributors[0]?.name || "Demo Developer",
       developers: f.contributors.map(c => ({
         developer: c.name,
         avatar_url: c.avatar,
@@ -889,8 +889,8 @@ export const MOCK_KNOWLEDGE_GRAPH = {
   total_contributors: 12,
   repo_bus_factor: 1,
   repo_risk_level: "HIGH",
-  repo_summary: "Rahul controls > 65% of critical systems including Authentication and Payments.",
-  dominant_contributor: "Rahul",
+  repo_summary: "A single contributor controls over 65% of critical systems, including Authentication and Payments.",
+  dominant_contributor: "Demo Developer",
   high_risk_features_count: 2,
   overall_developers: MOCK_DEVELOPERS.map(d => ({
     developer: d.name,

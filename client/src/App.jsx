@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Navbar } from "./components/Navbar";
-import { LoginHero } from "./components/LoginHero";
+import LoginPage from "./pages/LoginPage";
 import { CommitologyWorkspace } from "./components/workstation/CommitologyWorkspace";
 import { MetricCards } from "./components/MetricCards";
 import { FeatureClusteringView } from "./components/FeatureClusteringView";
@@ -14,7 +14,6 @@ import { TeamSuccessionPage } from "./pages/TeamSuccessionPage";
 import {
   getToken,
   setToken,
-  isDemoMode,
   setDemoMode,
   getMe,
   logoutUser,
@@ -35,16 +34,7 @@ import {
 
 export default function App() {
   const [token, setTokenState] = useState(getToken);
-  // Default to demo mode if no token, so user can immediately experience the interactive app!
-  const [demoMode, setDemoModeState] = useState(() => {
-    const val = localStorage.getItem("gitocx_demo_mode") || localStorage.getItem("commitology_demo_mode");
-    if (val === null) {
-      // First visit: active demo mode enabled for instant discovery
-      setDemoMode(true);
-      return true;
-    }
-    return val === "true";
-  });
+  const [demoMode, setDemoModeState] = useState(false);
 
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -291,30 +281,28 @@ export default function App() {
         </div>
       )}
 
-      {/* Global Navbar */}
-      <Navbar
-        user={user}
-        onLogout={handleLogout}
-        onOpenTokenModal={() => setTokenModalOpen(true)}
-        demoMode={demoMode}
-        onToggleDemoMode={handleToggleDemoMode}
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onSelectDeveloper={(devId) => {
-          setSelectedDeveloperId(devId);
-          setActiveTab("workspace");
-        }}
-      />
+      {(user || demoMode) && (
+        <Navbar
+          user={user}
+          onLogout={handleLogout}
+          onOpenTokenModal={() => setTokenModalOpen(true)}
+          demoMode={demoMode}
+          onToggleDemoMode={handleToggleDemoMode}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onSelectDeveloper={(devId) => {
+            setSelectedDeveloperId(devId);
+            setActiveTab("workspace");
+          }}
+        />
+      )}
 
       {/* Main Content Area */}
       {!user && !demoMode ? (
         <main className="flex-1 w-full overflow-y-auto">
-          <LoginHero
-            onEnterDemoMode={handleToggleDemoMode}
-            onOpenTokenModal={() => setTokenModalOpen(true)}
-          />
+          <LoginPage />
         </main>
       ) : (
         <main className="flex-1 w-full flex flex-col overflow-hidden min-h-0">

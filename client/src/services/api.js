@@ -35,7 +35,7 @@ export function setToken(token) {
 
 export function isDemoMode() {
   if (typeof window === "undefined") return false;
-  return (localStorage.getItem("gitocx_demo_mode") || localStorage.getItem("commitology_demo_mode")) === "false";
+  return (localStorage.getItem("gitocx_demo_mode") || localStorage.getItem("commitology_demo_mode")) === "true";
 }
 
 export function setDemoMode(enabled) {

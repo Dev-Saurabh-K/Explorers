@@ -156,7 +156,7 @@ export function Navbar({
                     <button
                       onClick={() => {
                         setUserMenuOpen(false);
-                        onSelectDeveloper("rahul");
+                        onSelectDeveloper(user.username || user.name);
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:text-yellow-300 hover:bg-yellow-400/10 rounded-lg transition-colors text-left"
                     >
