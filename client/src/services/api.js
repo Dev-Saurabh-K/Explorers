@@ -9,21 +9,14 @@ import {
   MOCK_DEVELOPERS,
 } from "./mockData";
 
-const envApiUrl = import.meta.env.VITE_API_BASE_URL;
-
 function resolveApiBaseUrl() {
-  if (import.meta.env.DEV) {
-    return envApiUrl || "http://localhost:8000";
-  }
-
-  if (envApiUrl && !/localhost|127\.0\.0\.1|\[::1\]/i.test(envApiUrl)) {
-    return envApiUrl;
-  }
-
-  return "https://backend.gitocx.duckdns.org";
+  const value = String(import.meta.env.VITE_API_BASE_URL || "")
+    .trim()
+    .replace(/\/+$/, "");
+  return value || "http://localhost:8000";
 }
 
-export const API_BASE_URL = resolveApiBaseUrl().replace(/\/+$/, "");
+export const API_BASE_URL = resolveApiBaseUrl();
 
 // Helper to retrieve token
 export function getToken() {
