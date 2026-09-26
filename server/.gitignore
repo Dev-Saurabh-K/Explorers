@@ -1,6 +1,5 @@
 .venv/
 .venv
 .env
-*.db
-app.db
+
 __pycache__/
