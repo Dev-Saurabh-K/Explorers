@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-
-const API = "http://localhost:8000";
+import { API_BASE_URL } from "../services/api";
 
 // ── Colour palette for avatars / charts ──────────────────────
 const COLORS = ["#8b5cf6","#06b6d4","#f59e0b","#f43f5e","#10b981","#a78bfa","#22d3ee","#fbbf24"];
@@ -252,7 +251,7 @@ function FeaturePanel({ repo, token, selectedFeature, onSelectFeature, onGenerat
     if (!repo || !token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/ai/features/categorize`, {
+      const res = await fetch(`${API_BASE_URL}/ai/features/categorize`, {
         method:"POST",
         headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
         body: JSON.stringify({ repo, max_commits:50, include_knowledge_graph:true }),
@@ -365,7 +364,7 @@ function OverviewPanel({ repo, token, feature, onNavigate }) {
     if (!feature || generating) return;
     setGenerating(true);
     try {
-      const res = await fetch(`${API}/ai/features/generate-doc`, {
+      const res = await fetch(`${API_BASE_URL}/ai/features/generate-doc`, {
         method:"POST",
         headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
         body: JSON.stringify({
@@ -600,7 +599,7 @@ export default function HomePage({ user, token, onLogout, onNavigate }) {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API}/github/repos`, {
+    fetch(`${API_BASE_URL}/github/repos`, {
       headers:{ Authorization:`Bearer ${token}` },
       credentials:"include",
     })

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API = "http://localhost:8000";
+import { API_BASE_URL } from "../services/api";
 const COLORS = ["#8b5cf6","#06b6d4","#f59e0b","#f43f5e","#10b981","#a78bfa","#22d3ee","#fbbf24"];
 
 // ── Donut chart ──────────────────────────────────────────────
@@ -63,7 +62,7 @@ export default function ProfilePage({ user, token, onLogout, onNavigate }) {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API}/github/repos`, {
+    fetch(`${API_BASE_URL}/github/repos`, {
       headers:{ Authorization:`Bearer ${token}` },
       credentials:"include",
     })
@@ -75,7 +74,7 @@ export default function ProfilePage({ user, token, onLogout, onNavigate }) {
   useEffect(() => {
     if (!selectedRepo || !token) return;
     setLoading(true);
-    fetch(`${API}/ai/features/categorize`, {
+    fetch(`${API_BASE_URL}/ai/features/categorize`, {
       method:"POST",
       headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
       body: JSON.stringify({ repo:selectedRepo, max_commits:50, include_knowledge_graph:true }),
