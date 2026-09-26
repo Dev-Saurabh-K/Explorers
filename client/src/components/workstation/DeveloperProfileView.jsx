@@ -85,10 +85,10 @@ export function DeveloperProfileView({
   }));
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#08090e] overflow-y-auto">
+    <div className="flex-1 flex flex-col h-full min-h-0 bg-[#08090e] overflow-hidden">
       
       {/* Top Banner & Header matching Screen 4 */}
-      <div className="p-6 border-b border-white/5 bg-[#0b0e17]">
+      <div className="p-4 sm:p-6 border-b border-white/5 bg-[#0b0e17] shrink-0 z-10">
         {/* Back Link */}
         <button
           onClick={onBack}

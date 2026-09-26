@@ -240,7 +240,7 @@ export function CommitologyWorkspace({
   };
 
   return (
-    <div className="flex-1 flex w-full h-[calc(100vh-3.5rem)] overflow-x-auto overflow-y-hidden bg-[#08090d]">
+    <div className="flex-1 flex w-full h-full min-h-0 overflow-x-auto overflow-y-hidden bg-[#08090d]">
       
       {/* Column 1: Developers / Authors Deck */}
       <DevelopersColumn
@@ -279,7 +279,7 @@ export function CommitologyWorkspace({
       />
 
       {/* Column 4: Main Content Panel */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-[440px] sm:min-w-[500px]">
+      <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden min-w-[440px] sm:min-w-[500px]">
         {viewMode === "developer" ? (
           <DeveloperProfileView
             developer={activeDeveloper}
