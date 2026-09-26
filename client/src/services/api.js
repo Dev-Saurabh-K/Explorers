@@ -9,7 +9,14 @@ import {
   MOCK_DEVELOPERS,
 } from "./mockData";
 
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/+$/, "");
+function resolveApiBaseUrl() {
+  const value = String(import.meta.env.VITE_API_BASE_URL || "")
+    .trim()
+    .replace(/\/+$/, "");
+  return value || "http://localhost:8000";
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 // Helper to retrieve token
 export function getToken() {

@@ -89,8 +89,7 @@ async def categorize_repo_features(
         features = categorizer.categorize_commits(
             repo_name=req.repo,
             commits=scoped_commits,
-            include_knowledge_graph=include_kg,
-            db=db
+            include_knowledge_graph=include_kg
         )
     except Exception as e:
         raise HTTPException(
@@ -166,8 +165,7 @@ async def generate_feature_documentation(
         markdown_doc = doc_generator.generate_feature_doc(
             feature_name=req.feature_name,
             feature_summary=req.feature_summary or "",
-            diff_context=diff_context,
-            db=db
+            diff_context=diff_context
         )
     except Exception as e:
         raise HTTPException(
