@@ -265,7 +265,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090d] text-slate-100 flex flex-col font-sans selection:bg-yellow-400/30 selection:text-yellow-200">
+    <div className="h-screen w-screen overflow-hidden bg-[#08090d] text-slate-100 flex flex-col font-sans selection:bg-yellow-400/30 selection:text-yellow-200">
       
       {/* Toast Notification with Cyber Yellow Glow */}
       {toastMessage && (
@@ -294,14 +294,14 @@ export default function App() {
 
       {/* Main Content Area */}
       {!user && !demoMode ? (
-        <main className="flex-1 w-full">
+        <main className="flex-1 w-full overflow-y-auto">
           <LoginHero
             onEnterDemoMode={handleToggleDemoMode}
             onOpenTokenModal={() => setTokenModalOpen(true)}
           />
         </main>
       ) : (
-        <main className="flex-1 w-full flex flex-col overflow-hidden">
+        <main className="flex-1 w-full flex flex-col overflow-hidden min-h-0">
           {activeTab === "workspace" && (
             <CommitologyWorkspace
               liveRepos={repos}

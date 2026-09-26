@@ -48,6 +48,13 @@ export function DeveloperProfileView({
     return <FileCode2 className="h-4 w-4 text-slate-400" />;
   };
 
+  const overallPercentage = Math.round(
+    developer.knowledge_percentage ??
+    developer.commit_percentage ??
+    developer.overall_contribution ??
+    (developer.percentage || 65)
+  );
+
   const primaryAreas = developer.primaryAreas || [
     { name: "Payment", percentage: 42, color: "#facc15" },
     { name: "Authentication", percentage: 28, color: "#22d3ee" },
@@ -58,6 +65,17 @@ export function DeveloperProfileView({
   const affected = developer.affectedStats || { files: 17, services: 4, integrations: 3 };
   const commitsCount = developer.commitsCount || 142;
 
+  const fallbackCommits = [
+    { sha: "7fd1a60", message: "feat(core): integrate architecture telemetry & dependency index", date: "2 hours ago" },
+    { sha: "4bc912a", message: "fix(pipeline): optimize commit ingestion & knowledge heuristics", date: "1 day ago" },
+    { sha: "8821dfe", message: "refactor(services): streamline event bus handlers and queue workers", date: "3 days ago" },
+    { sha: "2c19a3b", message: "docs(spec): document API contracts and data models", date: "5 days ago" }
+  ];
+
+  const commitsList = (developer.recentCommits && developer.recentCommits.length > 0)
+    ? developer.recentCommits
+    : fallbackCommits;
+
   const chartData = primaryAreas.map((area) => ({
     label: area.name,
     name: area.name,
@@ -67,10 +85,10 @@ export function DeveloperProfileView({
   }));
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#08090e] overflow-y-auto">
+    <div className="flex-1 flex flex-col h-full min-h-0 bg-[#08090e] overflow-hidden">
       
       {/* Top Banner & Header matching Screen 4 */}
-      <div className="p-6 border-b border-white/5 bg-[#0b0e17]">
+      <div className="p-4 sm:p-6 border-b border-white/5 bg-[#0b0e17] shrink-0 z-10">
         {/* Back Link */}
         <button
           onClick={onBack}
@@ -108,15 +126,28 @@ export function DeveloperProfileView({
             </div>
           </div>
 
-          {/* High Knowledge Concentration Alert Badge matching mockup */}
-          <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-start gap-3 max-w-md">
-            <ShieldAlert className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
-            <div>
-              <div className="text-xs font-black text-red-400 uppercase tracking-wide">
-                {developer.riskTitle || "High Knowledge Concentration"}
+          {/* Badges: Overall Contribution & Knowledge Concentration */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="p-3.5 rounded-2xl bg-[#00ff66]/10 border border-[#00ff66]/30 flex items-center gap-3">
+              <div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                  Overall Contribution
+                </div>
+                <div className="text-xl font-black text-[#00ff66] font-mono mt-0.5">
+                  {overallPercentage}%
+                </div>
               </div>
-              <div className="text-[11px] text-slate-300 mt-0.5">
-                {developer.riskDescription || "Primary contributor in 3 key features"}
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-start gap-3 max-w-xs">
+              <ShieldAlert className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+              <div>
+                <div className="text-xs font-black text-red-400 uppercase tracking-wide">
+                  {developer.riskTitle || "High Knowledge Concentration"}
+                </div>
+                <div className="text-[11px] text-slate-300 mt-0.5">
+                  {developer.riskDescription || "Primary contributor in 3 key features"}
+                </div>
               </div>
             </div>
           </div>
@@ -183,7 +214,7 @@ export function DeveloperProfileView({
       </div>
 
       {/* Profile Body */}
-      <div className="p-6">
+      <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
         {activeTab === "overview" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
@@ -339,24 +370,159 @@ export function DeveloperProfileView({
         )}
 
         {activeTab === "contributions" && (
-          <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
-            <h3 className="text-sm font-bold text-white mb-2">
-              Recent Commits by {developer.name}
-            </h3>
-            <div className="space-y-2">
-              {(developer.recentCommits || [
-                { sha: "7fd1a60", message: "feat(auth): integrate OAuth2 token refresh & session revocation", date: "2 hours ago" },
-                { sha: "4bc912a", message: "fix(payment): stripe webhook idempotency retry mechanism", date: "1 day ago" },
-                { sha: "8821dfe", message: "refactor(order): transition state machine to event-driven queue", date: "3 days ago" }
-              ]).map((c, i) => (
-                <div key={i} className="p-3 rounded-xl bg-slate-900/60 border border-white/5 font-mono text-xs flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-yellow-400 font-bold">{c.sha}</span>
-                    <span className="text-slate-200 font-sans">{c.message}</span>
+          <div className="space-y-6">
+            {/* Overall Contribution Telemetry Banner */}
+            <div className="p-5 rounded-2xl bg-[#0e121d] border border-[#00ff66]/20 shadow-xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                      Overall Contribution Telemetry
+                    </h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-black text-[#00ff66] border border-[#00ff66]/40 font-mono font-bold uppercase">
+                      {developer.role || "Contributor"}
+                    </span>
                   </div>
-                  <span className="text-slate-400 text-[11px] font-sans">{c.date}</span>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Aggregate code ownership, commit volume, and architecture impact across all repository subsystems.
+                  </p>
                 </div>
-              ))}
+
+                <div className="flex items-baseline gap-2 shrink-0 bg-black/60 px-4 py-2.5 rounded-xl border border-white/10 self-start sm:self-auto">
+                  <span className="text-2xl sm:text-3xl font-black text-[#00ff66] font-mono">
+                    {overallPercentage}%
+                  </span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400">
+                    Overall Share
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Bar of Overall Contribution */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-300 font-semibold flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#00ff66]" />
+                    Overall Knowledge & Codebase Footprint
+                  </span>
+                  <span className="font-mono text-yellow-400 font-bold">
+                    {overallPercentage}% of total repository logic
+                  </span>
+                </div>
+                <div className="w-full h-3 rounded-full bg-slate-900 border border-slate-800 overflow-hidden p-0.5">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#00ff66] via-[#00e5ff] to-[#ffb000] transition-all duration-500 shadow-[0_0_12px_rgba(0,255,102,0.4)]"
+                    style={{ width: `${Math.min(100, Math.max(5, overallPercentage))}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* 4 Stat Cards for Overall Contribution */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Total Commits
+                  </div>
+                  <div className="text-xl font-black text-white font-mono">
+                    {commitsCount}
+                  </div>
+                  <div className="text-[9px] text-[#00ff66] mt-0.5 font-mono">
+                    Authored in repo
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Files Impacted
+                  </div>
+                  <div className="text-xl font-black text-white font-mono">
+                    {affected.files}
+                  </div>
+                  <div className="text-[9px] text-slate-500 mt-0.5 font-mono">
+                    Across modules
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Services Touched
+                  </div>
+                  <div className="text-xl font-black text-white font-mono">
+                    {affected.services}
+                  </div>
+                  <div className="text-[9px] text-slate-500 mt-0.5 font-mono">
+                    Active services
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Risk Concentration
+                  </div>
+                  <div className={`text-xl font-black font-mono ${developer.isDominant || developer.riskLevel === "HIGH" ? "text-amber-400" : "text-emerald-400"}`}>
+                    {developer.riskLevel || (developer.isDominant ? "HIGH" : "BALANCED")}
+                  </div>
+                  <div className="text-[9px] text-slate-500 mt-0.5 font-mono">
+                    Bus-factor index
+                  </div>
+                </div>
+              </div>
+
+              {/* Module-by-Module Contribution Breakdown */}
+              <div className="pt-2">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+                  Contribution Breakdown by Module
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {primaryAreas.map((area, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-slate-900/40 border border-white/5 flex flex-col justify-between gap-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 truncate">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: area.color || "#ffb000" }}
+                          />
+                          <span className="font-semibold text-slate-200 truncate">{area.name}</span>
+                        </div>
+                        <span className="font-mono font-bold text-[#ffb000] shrink-0">{area.percentage}%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{
+                            width: `${area.percentage}%`,
+                            backgroundColor: area.color || "#ffb000"
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Commits Section */}
+            <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-bold text-white">
+                  Recent Commits by {developer.name}
+                </h3>
+                <span className="text-[11px] font-mono text-slate-400">
+                  {commitsList.length} verified commits
+                </span>
+              </div>
+              <div className="space-y-2">
+                {commitsList.map((c, i) => (
+                  <div key={i} className="p-3 rounded-xl bg-slate-900/60 border border-white/5 font-mono text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <GitCommit className="h-4 w-4 text-[#00ff66] shrink-0" />
+                      <span className="text-yellow-400 font-bold shrink-0">{c.sha}</span>
+                      <span className="text-slate-200 font-sans truncate">{c.message}</span>
+                    </div>
+                    <span className="text-slate-400 text-[11px] font-sans shrink-0 sm:self-center">{c.date}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

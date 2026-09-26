@@ -185,10 +185,10 @@ export function FeatureOverviewView({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#080a0f] overflow-y-auto font-mono select-none">
+    <div className="flex-1 flex flex-col h-full min-h-0 bg-[#080a0f] overflow-hidden font-mono select-none">
       
       {/* Top Header */}
-      <div className="p-4 sm:p-5 border-b border-[#00ff66]/20 bg-[#0c0e16] shrink-0">
+      <div className="p-4 sm:p-5 border-b border-[#00ff66]/20 bg-[#0c0e16] shrink-0 z-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
           {/* Feature Identity */}
@@ -283,7 +283,7 @@ export function FeatureOverviewView({
       </div>
 
       {/* Main Content Area */}
-      <div className="p-4 sm:p-5 space-y-5">
+      <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-5 space-y-5">
         
         {/* Sub-Tab: Overview */}
         {activeSubTab === "overview" && (
@@ -294,7 +294,7 @@ export function FeatureOverviewView({
               {/* Card 1: Contributors */}
               <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-[#00ff66]/20 shadow-xl flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3 gap-2 flex-wrap">
                     <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                       Feature Authors
                     </h3>
@@ -359,7 +359,7 @@ export function FeatureOverviewView({
               {/* Card 2: Contribution Distribution Donut Chart */}
               <div className="p-4 sm:p-5 rounded-xl bg-[#0c0e16] border border-[#00ff66]/20 shadow-xl flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3 gap-2 flex-wrap">
                     <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                       Contribution Distribution
                     </h3>

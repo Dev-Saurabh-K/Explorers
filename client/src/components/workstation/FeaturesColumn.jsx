@@ -72,7 +72,7 @@ export function FeaturesColumn({
 
   if (collapsed) {
     return (
-      <div className="w-12 shrink-0 flex flex-col items-center py-3 border-r border-[#00ff66]/20 bg-[#090b10] select-none h-full justify-between font-mono">
+      <div className="w-12 shrink-0 flex flex-col items-center py-3 border-r border-[#00ff66]/20 bg-[#090b10] select-none h-full min-h-0 justify-between font-mono">
         <div className="flex flex-col items-center gap-3">
           <button
             onClick={onToggleCollapse}
@@ -99,9 +99,9 @@ export function FeaturesColumn({
   }
 
   return (
-    <div className="w-60 lg:w-64 shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#0a0d14] select-none h-full overflow-hidden font-mono">
+    <div className="w-60 lg:w-64 shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#0a0d14] select-none h-full min-h-0 overflow-hidden font-mono">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0c0f18]">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0c0f18] shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
           <Terminal className="h-3.5 w-3.5 text-[#00e5ff] shrink-0" />
           <span className="text-[11px] font-bold text-white tracking-wider truncate uppercase">
@@ -134,7 +134,7 @@ export function FeaturesColumn({
       </div>
 
       {/* Search Bar */}
-      <div className="p-2 border-b border-[#00ff66]/15 bg-[#090b10]">
+      <div className="p-2 border-b border-[#00ff66]/15 bg-[#090b10] shrink-0">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-500 pointer-events-none" />
           <input
@@ -148,7 +148,7 @@ export function FeaturesColumn({
       </div>
 
       {/* Feature Items List */}
-      <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
+      <div className="flex-1 overflow-y-auto min-h-0 p-1.5 space-y-1">
         {filtered.map((feature, idx) => {
           const fid = feature.id || feature.feature_id || `feat-${idx}`;
           const fname = feature.name || feature.feature_name || "Feature";

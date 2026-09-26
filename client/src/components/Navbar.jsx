@@ -33,7 +33,7 @@ export function Navbar({
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#090b12]/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 w-full shrink-0 border-b border-white/5 bg-[#090b12]/95 backdrop-blur-xl">
       <div className="w-full px-4 sm:px-6">
         <div className="flex items-center justify-between h-14 gap-3 sm:gap-6">
           
