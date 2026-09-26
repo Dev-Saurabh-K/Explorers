@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "../services/api";
+import { categorizeFeatures, getRepos } from "../services/api";
 const COLORS = ["#8b5cf6","#06b6d4","#f59e0b","#f43f5e","#10b981","#a78bfa","#22d3ee","#fbbf24"];
 
 // ── Donut chart ──────────────────────────────────────────────
@@ -62,26 +62,24 @@ export default function ProfilePage({ user, token, onLogout, onNavigate }) {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_BASE_URL}/github/repos`, {
-      headers:{ Authorization:`Bearer ${token}` },
-      credentials:"include",
-    })
-      .then(r => r.ok ? r.json() : [])
-      .then(data => { const arr = Array.isArray(data) ? data : []; setRepos(arr); if (arr[0]) setSelectedRepo(arr[0]); })
+    getRepos()
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : [];
+        setRepos(arr);
+        if (arr[0]) setSelectedRepo(arr[0]);
+      })
       .catch(() => {});
   }, [token]);
 
   useEffect(() => {
     if (!selectedRepo || !token) return;
     setLoading(true);
-    fetch(`${API_BASE_URL}/ai/features/categorize`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
-      body: JSON.stringify({ repo:selectedRepo, max_commits:50, include_knowledge_graph:true }),
-      credentials:"include",
+    categorizeFeatures({
+      repo: selectedRepo,
+      max_commits: 50,
+      include_knowledge_graph: true,
     })
-      .then(r => r.ok ? r.json() : { features:[] })
-      .then(data => setFeatures(data.features || []))
+      .then((data) => setFeatures(data.features || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [selectedRepo, token]);

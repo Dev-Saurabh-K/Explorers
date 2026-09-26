@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { API_BASE_URL } from "../services/api";
+import { categorizeFeatures, generateDoc as requestGenerateDoc, getRepos } from "../services/api";
 
 // ── Colour palette for avatars / charts ──────────────────────
 const COLORS = ["#8b5cf6","#06b6d4","#f59e0b","#f43f5e","#10b981","#a78bfa","#22d3ee","#fbbf24"];
@@ -251,17 +251,13 @@ function FeaturePanel({ repo, token, selectedFeature, onSelectFeature, onGenerat
     if (!repo || !token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/ai/features/categorize`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
-        body: JSON.stringify({ repo, max_commits:50, include_knowledge_graph:true }),
-        credentials:"include",
+      const data = await categorizeFeatures({
+        repo,
+        max_commits: 50,
+        include_knowledge_graph: true,
       });
-      if (res.ok) {
-        const data = await res.json();
-        setFeatures(data.features || []);
-        if (data.features?.length) onSelectFeature(data.features[0]);
-      }
+      setFeatures(data.features || []);
+      if (data.features?.length) onSelectFeature(data.features[0]);
     } catch {}
     setLoading(false);
   }, [repo, token]);
@@ -364,20 +360,14 @@ function OverviewPanel({ repo, token, feature, onNavigate }) {
     if (!feature || generating) return;
     setGenerating(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/ai/features/generate-doc`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
-        body: JSON.stringify({
-          repo,
-          feature_id:      feature.feature_id,
-          feature_name:    feature.feature_name,
-          feature_summary: feature.summary,
-          commit_shas:     feature.commit_shas,
-        }),
-        credentials:"include",
+      const data = await requestGenerateDoc({
+        repo,
+        feature_id: feature.feature_id,
+        feature_name: feature.feature_name,
+        feature_summary: feature.summary,
+        commit_shas: feature.commit_shas,
       });
-      if (res.ok) {
-        const data = await res.json();
+      if (data) {
         setDocResult(data);
       }
     } catch {}
@@ -599,12 +589,8 @@ export default function HomePage({ user, token, onLogout, onNavigate }) {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_BASE_URL}/github/repos`, {
-      headers:{ Authorization:`Bearer ${token}` },
-      credentials:"include",
-    })
-      .then(r => r.ok ? r.json() : [])
-      .then(data => setRepos(Array.isArray(data) ? data : []))
+    getRepos()
+      .then((data) => setRepos(Array.isArray(data) ? data : []))
       .catch(() => {})
       .finally(() => setReposLoading(false));
   }, [token]);
