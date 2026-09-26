@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API = "http://localhost:8000";
+import { API_BASE_URL } from "../services/api";
 
 // ── Stars background ────────────────────────────────────────────
 const Stars = () => {
@@ -40,7 +39,7 @@ const GithubIcon = ({ size = 22 }) => (
 export default function LoginPage({ onLogin }) {
   const handleLogin = (e) => {
     e.preventDefault();
-    window.location.href = `${API}/auth/github`;
+    window.location.href = `${API_BASE_URL}/auth/github`;
   };
 
   return (
