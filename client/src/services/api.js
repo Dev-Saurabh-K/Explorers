@@ -9,7 +9,21 @@ import {
   MOCK_DEVELOPERS,
 } from "./mockData";
 
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/+$/, "");
+const envApiUrl = import.meta.env.VITE_API_BASE_URL;
+
+function resolveApiBaseUrl() {
+  if (import.meta.env.DEV) {
+    return envApiUrl || "http://localhost:8000";
+  }
+
+  if (envApiUrl && !/localhost|127\.0\.0\.1|\[::1\]/i.test(envApiUrl)) {
+    return envApiUrl;
+  }
+
+  return "https://backend.gitocx.duckdns.org";
+}
+
+export const API_BASE_URL = resolveApiBaseUrl().replace(/\/+$/, "");
 
 // Helper to retrieve token
 export function getToken() {
@@ -28,7 +42,7 @@ export function setToken(token) {
 
 export function isDemoMode() {
   if (typeof window === "undefined") return false;
-  return (localStorage.getItem("gitocx_demo_mode") || localStorage.getItem("commitology_demo_mode")) === "true";
+  return (localStorage.getItem("gitocx_demo_mode") || localStorage.getItem("commitology_demo_mode")) === "false";
 }
 
 export function setDemoMode(enabled) {
