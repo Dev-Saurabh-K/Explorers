@@ -13,7 +13,8 @@ from app.models.cached_responses import (
     CachedRepositoryKnowledgeGraph,
     CachedFeatureKnowledgeGraph,
     CachedFeatureCategorization,
-    CachedFeatureDoc
+    CachedFeatureDoc,
+    CachedAIResponse
 )
 from app.middleware.auth_middleware import auth_middleware
 from app.routes.auth_routes import router as auth_router
@@ -42,13 +43,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="GitOcx API",
+    title="Commitology API",
     lifespan=lifespan
 )
-
-# Register auth middleware FIRST so that CORSMiddleware (registered second)
-# wraps it as the outermost layer — ensuring CORS headers are present even on 401 responses.
-app.middleware("http")(auth_middleware)
 
 # Allow CORS for development / frontend clients
 app.add_middleware(
@@ -58,6 +55,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.middleware("http")(auth_middleware)
 
 app.include_router(auth_router)
 app.include_router(github_routes)

@@ -212,3 +212,27 @@ class CachedFeatureDoc(Base):
     __table_args__ = (
         UniqueConstraint("user_id", "repo_name", "feature_id", name="uq_cached_doc_user_repo_feat"),
     )
+
+
+class CachedAIResponse(Base):
+    """Caches raw AI LLM outputs by prompt hash to avoid duplicate AI API calls."""
+    __tablename__ = "cached_ai_responses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    prompt_hash: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
+    prompt_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    prompt_input: Mapped[str] = mapped_column(Text, nullable=False)
+    response_text: Mapped[str] = mapped_column(Text, nullable=False)
+    model_name: Mapped[str] = mapped_column(String, nullable=False, default="gemini-3.6-flash")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
+        nullable=False
+    )
+
