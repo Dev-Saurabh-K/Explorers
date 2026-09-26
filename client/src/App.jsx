@@ -186,7 +186,7 @@ export default function App() {
   }, [selectedRepo, demoMode]);
 
   // Actions
-  const handleCategorize = async ({ max_commits = 50, include_knowledge_graph = true } = {}) => {
+  const handleCategorize = async ({ max_commits = 50, include_knowledge_graph = true, refresh = false } = {}) => {
     if (!selectedRepo) return;
     setClusteringLoading(true);
     try {
@@ -194,8 +194,14 @@ export default function App() {
         repo: selectedRepo,
         max_commits,
         include_knowledge_graph,
+        refresh,
       });
       setFeatures(res.features || []);
+      if (refresh) {
+        getKnowledgeConcentration(selectedRepo, 100, true)
+          .then(setKnowledgeData)
+          .catch(console.warn);
+      }
       showToast(`Decompiled ${res.features?.length || 0} features from ${res.total_commits || max_commits} commits!`);
       return res.features;
     } catch (err) {

@@ -11,6 +11,24 @@ import {
   MOCK_REPOSITORIES,
   MOCK_FEATURES
 } from "../../services/mockData";
+import { getRepoCommits, syncRepoData } from "../../services/api";
+
+function formatTimeAgo(dateStr) {
+  if (!dateStr) return "Recent";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  const now = new Date();
+  const diffSec = Math.floor((now - date) / 1000);
+  if (diffSec < 60) return "Just now";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDays = Math.floor(diffHr / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  const diffMonths = Math.floor(diffDays / 30);
+  return `${diffMonths}mo ago`;
+}
 
 export function CommitologyWorkspace({
   liveRepos = [],
@@ -29,6 +47,31 @@ export function CommitologyWorkspace({
   const [devsCollapsed, setDevsCollapsed] = useState(() => (typeof window !== "undefined" ? window.innerWidth < 1024 : false));
   const [reposCollapsed, setReposCollapsed] = useState(() => (typeof window !== "undefined" ? window.innerWidth < 1024 : false));
   const [featuresCollapsed, setFeaturesCollapsed] = useState(false);
+
+  // Live repository commits telemetry
+  const [liveRepoCommits, setLiveRepoCommits] = useState([]);
+  const [isSyncingLive, setIsSyncingLive] = useState(false);
+
+  const targetRepo = selectedLiveRepo || (liveRepos[0] ? (typeof liveRepos[0] === "string" ? liveRepos[0] : liveRepos[0].name) : "");
+
+  const fetchLiveRepoCommits = async (forceRefresh = false) => {
+    if (!targetRepo) return;
+    setIsSyncingLive(true);
+    try {
+      const commits = await getRepoCommits(targetRepo, forceRefresh);
+      if (commits && commits.length > 0) {
+        setLiveRepoCommits(commits);
+      }
+    } catch (err) {
+      console.warn("Could not fetch live repo commits:", err);
+    } finally {
+      setIsSyncingLive(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveRepoCommits(false);
+  }, [targetRepo]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -70,21 +113,39 @@ export function CommitologyWorkspace({
               { name: "Architecture Models", percentage: Math.max(10, Math.round(devPercentage * 0.25)), color: "#00ff66" }
             ];
 
-        // Gather real commits or formatted fallback commits
-        const extractedCommits = [];
-        (knowledgeData.features || liveFeatures || []).forEach(f => {
-          (f.commits || []).forEach(c => {
-            if (!c.author || c.author.toLowerCase().includes(devName.toLowerCase()) || d.is_dominant) {
-              if (extractedCommits.length < 8) {
-                extractedCommits.push({
-                  sha: c.sha ? c.sha.slice(0, 7) : "8f4d21b",
-                  message: c.message || `feat(${f.name || "core"}): update architecture implementation`,
-                  date: c.date || "Recent"
-                });
-              }
+        // 1. Gather real live commits matching this developer
+        const liveDevCommits = [];
+        if (liveRepoCommits && liveRepoCommits.length > 0) {
+          liveRepoCommits.forEach(c => {
+            const author = (c.author || "").toLowerCase();
+            const devLower = devName.toLowerCase();
+            if (author === devLower || author.includes(devLower) || devLower.includes(author) || (d.is_dominant && liveDevCommits.length < 5)) {
+              liveDevCommits.push({
+                sha: (c.sha || "").slice(0, 7),
+                message: c.message || "",
+                date: formatTimeAgo(c.date)
+              });
             }
           });
-        });
+        }
+
+        // 2. Fallback to extracted commits from features if no live commits matched
+        const extractedCommits = [];
+        if (liveDevCommits.length === 0) {
+          (knowledgeData.features || liveFeatures || []).forEach(f => {
+            (f.commits || []).forEach(c => {
+              if (!c.author || c.author.toLowerCase().includes(devName.toLowerCase()) || d.is_dominant) {
+                if (extractedCommits.length < 8) {
+                  extractedCommits.push({
+                    sha: c.sha ? c.sha.slice(0, 7) : "8f4d21b",
+                    message: c.message || `feat(${f.name || "core"}): update architecture implementation`,
+                    date: c.date ? formatTimeAgo(c.date) : "Recent"
+                  });
+                }
+              }
+            });
+          });
+        }
 
         const fallbackCommits = [
           { sha: "8f4d21b", message: `feat(${selectedLiveRepo ? selectedLiveRepo.split('/').pop() : "core"}): optimize core architecture and pipeline`, date: "2 hours ago" },
@@ -93,7 +154,8 @@ export function CommitologyWorkspace({
           { sha: "1c9e42f", message: "test(pipeline): add regression suite for commit categorizer", date: "5 days ago" }
         ];
 
-        const recentCommits = extractedCommits.length > 0 ? extractedCommits : fallbackCommits;
+        const recentCommits = liveDevCommits.length > 0 ? liveDevCommits : (extractedCommits.length > 0 ? extractedCommits : fallbackCommits);
+        const commitsCount = (liveDevCommits.length > 0 ? liveDevCommits.length : d.commit_count) || 1;
 
         return {
           id: d.developer,
@@ -103,15 +165,15 @@ export function CommitologyWorkspace({
           email: `${d.developer.toLowerCase()}@github.com`,
           avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${d.developer}&background=0c0f18&color=00e5ff`,
           isDominant: d.is_dominant || idx === 0,
-          commitsCount: d.commit_count || 1,
+          commitsCount,
           knowledge_percentage: devPercentage,
           overall_contribution: devPercentage,
           riskLevel: d.risk_level || (d.is_dominant ? "HIGH" : "LOW"),
           riskTitle: d.is_dominant ? "High Knowledge Concentration" : "Balanced Contributor",
-          riskDescription: `${d.commit_count} commits analyzed • ${devPercentage}% overall knowledge share`,
+          riskDescription: `${commitsCount} commits analyzed • ${devPercentage}% overall knowledge share`,
           primaryAreas,
           affectedStats: {
-            files: Math.max(4, Math.min((d.commit_count || 1) * 2, 28)),
+            files: Math.max(4, Math.min(commitsCount * 2, 28)),
             services: Math.max(1, Math.min(devFeatures.length || 3, 6)),
             integrations: 3
           },
@@ -125,7 +187,7 @@ export function CommitologyWorkspace({
       });
     }
     return MOCK_DEVELOPERS;
-  }, [knowledgeData, selectedLiveRepo, liveFeatures]);
+  }, [knowledgeData, selectedLiveRepo, liveFeatures, liveRepoCommits]);
 
   // Derive repositories: In live mode, only show real liveRepos
   const repositories = React.useMemo(() => {
@@ -257,6 +319,13 @@ export function CommitologyWorkspace({
         repositories={repositories}
         selectedRepoId={selectedRepoId}
         onSelectRepo={handleSelectRepo}
+        onSyncRepo={() => {
+          fetchLiveRepoCommits(true);
+          if (onCategorizeFeatures) {
+            onCategorizeFeatures({ max_commits: 50, include_knowledge_graph: true, refresh: true });
+          }
+        }}
+        isSyncing={isSyncingLive}
         onAddRepo={() => {
           const newName = prompt("Enter GitHub repository (e.g. owner/repo):");
           if (newName) {
@@ -283,6 +352,7 @@ export function CommitologyWorkspace({
         {viewMode === "developer" ? (
           <DeveloperProfileView
             developer={activeDeveloper}
+            repoName={targetRepo}
             onBack={() => setViewMode("overview")}
             onSelectFeature={(featId) => {
               const matched = features.find((f) => (f.id || f.feature_id) === featId || (f.name || f.feature_name || "").toLowerCase().includes(featId));
