@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     github_client_secret: str = ""
     github_redirect_url: str = ""
 
-    jwt_secret: str = ""
+    jwt_secret: str = "secret_jwt_key_dev_default_123456789"
     jwt_algorithm: str = "HS256"
 
     database_url: str = "sqlite:///./app.db"
