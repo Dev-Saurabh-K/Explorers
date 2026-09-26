@@ -243,9 +243,51 @@ def test_ai_routes_caching():
     assert doc_data["markdown_content"] == "# Pre-cached Documentation"
 
 
+def test_ai_routes_generate_uncached_results():
+    """Verify cache misses reach AI services and cache the generated responses."""
+    repo = "org/uncached-ai-route-test"
+    commit = {"sha": "sha123", "message": "feat: route test", "author": "alice"}
+
+    with patch("app.routes.ai_routes.get_repo_commits", return_value=[commit]), \
+         patch("app.routes.ai_routes.categorizer.categorize_commits", return_value=[]) as categorize:
+        cat_res = client.post(
+            "/ai/features/categorize?refresh=true",
+            json={"repo": repo, "max_commits": 10},
+            headers=headers_1
+        )
+        assert cat_res.status_code == 200, cat_res.text
+        assert cat_res.json()["features"] == []
+        categorize.assert_called_once_with(
+            repo_name=repo,
+            commits=[commit],
+            include_knowledge_graph=True
+        )
+
+    with patch("app.routes.ai_routes.get_feature_diff_context", return_value={"commits": [], "files": []}), \
+         patch("app.routes.ai_routes.doc_generator.generate_feature_doc", return_value="# Generated doc") as generate_doc:
+        doc_res = client.post(
+            "/ai/features/generate-doc?refresh=true",
+            json={
+                "repo": repo,
+                "feature_id": "route-test",
+                "feature_name": "Route Test",
+                "commit_shas": ["sha123"]
+            },
+            headers=headers_1
+        )
+        assert doc_res.status_code == 200, doc_res.text
+        assert doc_res.json()["markdown_content"] == "# Generated doc"
+        generate_doc.assert_called_once_with(
+            feature_name="Route Test",
+            feature_summary="",
+            diff_context={"commits": [], "files": []}
+        )
+
+
 if __name__ == "__main__":
     test_cache_service_user_isolation()
     test_github_repos_caching_and_refresh()
     test_sync_endpoints()
     test_ai_routes_caching()
+    test_ai_routes_generate_uncached_results()
     print("All Caching and Sync tests passed successfully!")
