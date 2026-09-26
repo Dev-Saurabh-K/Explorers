@@ -1,21 +1,24 @@
-# Use official Python base image (adjust if you need slim/alpine)
-FROM python:3.14.6-slim
+FROM python:3.12-slim
 
-# Set working directory inside container
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 WORKDIR /app
 
-# Install uv (modern Python package manager)
-RUN pip install --no-cache-dir uv
-
-# Copy dependency files first for caching
+# Copy dependency files first
 COPY pyproject.toml uv.lock ./
 
-# Sync dependencies into container environment
-RUN uv sync --frozen
+# Install dependencies into the system environment
+RUN uv sync --frozen --no-dev
 
-# Copy the rest of your project
+# Copy application
 COPY . .
 
-# Default command (adjust to your app entrypoint)
-# Example: FastAPI with uvicorn
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# FastAPI
+EXPOSE 8000
+
+# Use all available CPU cores via multiple workers
+CMD ["uv", "run", "uvicorn", "app.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "4"]
