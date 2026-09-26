@@ -24,6 +24,22 @@ router = APIRouter(prefix="/github/repo", tags=["Knowledge Concentration & Graph
 knowledge_service = KnowledgeConcentrationService()
 
 
+SAMPLE_MOCK_REPOS = {
+    "ecommerce-platform",
+    "auth-microservice",
+    "analytics-pipeline",
+    "payment-gateway"
+}
+
+SAMPLE_COMMITS = [
+    {"sha": "7fd1a60", "message": "feat(payment): integrate stripe checkout gateway", "author": "Rahul", "avatar_url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150", "date": "2026-09-24T12:00:00Z"},
+    {"sha": "4bc912a", "message": "feat(auth): oauth2 authentication session middleware", "author": "Rahul", "avatar_url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150", "date": "2026-09-23T10:00:00Z"},
+    {"sha": "8821dfe", "message": "feat(auth): token verification and rbac roles", "author": "Priya", "avatar_url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", "date": "2026-09-22T08:00:00Z"},
+    {"sha": "2c19a3b", "message": "feat(ui): responsive splitters and dark workstation layout", "author": "Aman", "avatar_url": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150", "date": "2026-09-21T14:00:00Z"},
+    {"sha": "3a92b1f", "message": "feat(core): telemetry and knowledge clustering", "author": "Neha", "avatar_url": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150", "date": "2026-09-20T16:00:00Z"},
+]
+
+
 @router.get(
     "/knowledge-concentration",
     response_model=RepositoryKnowledgeGraph,
@@ -41,20 +57,27 @@ async def get_repository_knowledge_concentration(
         if cached:
             return cached
 
-    token = current_user.github_access_token
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Authenticated user does not have a linked GitHub access token"
-        )
+    # Handle demo / sample repositories without GitHub API
+    if repo in SAMPLE_MOCK_REPOS or "/" not in repo:
+        raw_commits = SAMPLE_COMMITS
+    else:
+        token = current_user.github_access_token
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Authenticated user does not have a linked GitHub access token"
+            )
 
-    try:
-        raw_commits = get_repo_commits(token, repo, limit=max_commits)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to fetch commits for repository '{repo}': {str(e)}"
-        )
+        try:
+            raw_commits = get_repo_commits(token, repo, limit=max_commits)
+        except Exception as e:
+            if repo in SAMPLE_MOCK_REPOS or "/" not in repo:
+                raw_commits = SAMPLE_COMMITS
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Failed to fetch commits for repository '{repo}': {str(e)}"
+                )
 
     if not raw_commits:
         raise HTTPException(

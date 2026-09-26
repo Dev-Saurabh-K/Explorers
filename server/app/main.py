@@ -16,12 +16,18 @@ from app.models.cached_responses import (
     CachedFeatureDoc,
     CachedAIResponse
 )
+from app.models.team_models import (
+    DeveloperStatus,
+    FeatureSuccessionAssignment,
+    DeveloperExperienceProfile,
+)
 from app.middleware.auth_middleware import auth_middleware
 from app.routes.auth_routes import router as auth_router
 from app.routes.github_routes import router as github_routes
 from app.routes.ai_routes import router as ai_routes
 from app.routes.knowledge_routes import router as knowledge_routes
 from app.routes.sync_routes import router as sync_routes
+from app.routes.team_routes import router as team_routes
 
 # Initialize database tables on module load to support test runners and CLI imports
 Base.metadata.create_all(bind=engine)
@@ -63,6 +69,7 @@ app.include_router(github_routes)
 app.include_router(ai_routes)
 app.include_router(knowledge_routes)
 app.include_router(sync_routes)
+app.include_router(team_routes)
 
 
 @app.get("/", summary="Health check")

@@ -12,7 +12,8 @@ import {
   ShieldAlert,
   Server,
   Layers,
-  UserCheck
+  UserCheck,
+  Users
 } from "lucide-react";
 import { API_BASE_URL } from "../services/api";
 
@@ -107,6 +108,17 @@ export function Navbar({
                 >
                   Telemetry
                 </button>
+                <button
+                  onClick={() => onSelectTab("team")}
+                  className={`px-3 py-1 rounded-md transition-all flex items-center gap-1.5 ${
+                    activeTab === "team"
+                      ? "bg-[#00ff66]/20 text-[#00ff66] border border-[#00ff66]/30 shadow-sm font-bold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <Users className="h-3 w-3" />
+                  Team & Succession
+                </button>
               </div>
             )}
 
@@ -150,6 +162,17 @@ export function Navbar({
                     >
                       <UserCheck className="h-3.5 w-3.5 text-yellow-400" />
                       <span>Developer Profile</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        onSelectTab("team");
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-200 hover:text-[#00ff66] hover:bg-[#00ff66]/10 rounded-lg transition-colors text-left"
+                    >
+                      <Users className="h-3.5 w-3.5 text-[#00ff66]" />
+                      <span>Team & Succession</span>
                     </button>
 
                     <button
