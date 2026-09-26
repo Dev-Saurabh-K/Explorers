@@ -18,7 +18,7 @@ export function RepositoriesColumn({
 
   if (collapsed) {
     return (
-      <div className="w-12 shrink-0 flex flex-col items-center py-3 border-r border-[#00ff66]/20 bg-[#090b10] select-none h-full justify-between">
+      <div className="w-12 shrink-0 flex flex-col items-center py-3 border-r border-[#00ff66]/20 bg-[#090b10] select-none h-full min-h-0 justify-between">
         <div className="flex flex-col items-center gap-3">
           <button
             onClick={onToggleCollapse}
@@ -44,9 +44,9 @@ export function RepositoriesColumn({
   }
 
   return (
-    <div className="w-56 lg:w-60 shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#090b10] select-none h-full overflow-hidden font-mono">
+    <div className="w-56 lg:w-60 shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#090b10] select-none h-full min-h-0 overflow-hidden font-mono">
       {/* Header with Title and Controls */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0c0e16]">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0c0e16] shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
           <Disc3 className="h-3.5 w-3.5 text-[#ffb000] shrink-0 animate-spin" style={{ animationDuration: "12s" }} />
           <span className="text-[11px] font-bold text-white tracking-wider truncate uppercase">
@@ -76,7 +76,7 @@ export function RepositoriesColumn({
       </div>
 
       {/* Search Input */}
-      <div className="p-2 border-b border-[#00ff66]/15 bg-[#0a0d14]">
+      <div className="p-2 border-b border-[#00ff66]/15 bg-[#0a0d14] shrink-0">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-500 pointer-events-none" />
           <input
@@ -90,7 +90,7 @@ export function RepositoriesColumn({
       </div>
 
       {/* Repositories Tape List */}
-      <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
+      <div className="flex-1 overflow-y-auto min-h-0 p-1.5 space-y-1">
         {filtered.map((repo) => {
           const repoId = typeof repo === "string" ? repo : repo.id || repo.name;
           const repoName = typeof repo === "string" ? repo : repo.name;

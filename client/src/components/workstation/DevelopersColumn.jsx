@@ -18,7 +18,7 @@ export function DevelopersColumn({
 
   if (collapsed) {
     return (
-      <div className="w-14 shrink-0 flex flex-col items-center py-2.5 border-r border-[#00ff66]/20 bg-[#080a0f] select-none h-full font-mono overflow-hidden">
+      <div className="w-14 shrink-0 flex flex-col items-center py-2.5 border-r border-[#00ff66]/20 bg-[#080a0f] select-none h-full min-h-0 font-mono overflow-hidden">
         {/* Toggle Expand Header */}
         <div className="flex flex-col items-center gap-1.5 pb-2 border-b border-[#00ff66]/20 w-full px-2 shrink-0">
           <button
@@ -35,7 +35,7 @@ export function DevelopersColumn({
         </div>
 
         {/* Scrollable Contributor Avatar Images */}
-        <div className="flex-1 overflow-y-auto py-2 px-1.5 space-y-2 w-full flex flex-col items-center">
+        <div className="flex-1 overflow-y-auto min-h-0 py-2 px-1.5 space-y-2 w-full flex flex-col items-center">
           {filteredDevs.map((dev, idx) => {
             const id = dev.id || dev.developer || `dev-${idx}`;
             const name = dev.name || dev.developer;
@@ -79,9 +79,9 @@ export function DevelopersColumn({
   }
 
   return (
-    <div className="w-52 lg:w-56 shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#080a0f] select-none h-full overflow-hidden font-mono">
+    <div className="w-52 lg:w-56 shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#080a0f] select-none h-full min-h-0 overflow-hidden font-mono">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0b0e17]">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0b0e17] shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
           <Users className="h-3.5 w-3.5 text-[#00ff66] shrink-0" />
           <span className="text-[11px] font-bold text-white tracking-wider truncate uppercase">
@@ -102,7 +102,7 @@ export function DevelopersColumn({
       </div>
 
       {/* Developer List */}
-      <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
+      <div className="flex-1 overflow-y-auto min-h-0 p-1.5 space-y-1">
         {filteredDevs.map((dev, idx) => {
           const id = dev.id || dev.developer || `dev-${idx}`;
           const name = dev.name || dev.developer;
