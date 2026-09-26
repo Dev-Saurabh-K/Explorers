@@ -41,7 +41,8 @@ export function CommitologyWorkspace({
   onGenerateDocApi = () => {},
   generatingDocId = null,
   searchQuery = "",
-  initialDeveloperId = null
+  initialDeveloperId = null,
+  onOpenTeamPage = () => {}
 }) {
   // Responsive layout: detect small screen (<1024px)
   const [devsCollapsed, setDevsCollapsed] = useState(() => (typeof window !== "undefined" ? window.innerWidth < 1024 : false));
@@ -312,6 +313,7 @@ export function CommitologyWorkspace({
         searchQuery={searchQuery}
         collapsed={devsCollapsed}
         onToggleCollapse={() => setDevsCollapsed(!devsCollapsed)}
+        onOpenTeamPage={onOpenTeamPage}
       />
 
       {/* Column 2: Repositories Tape Selector */}
@@ -354,6 +356,7 @@ export function CommitologyWorkspace({
             developer={activeDeveloper}
             repoName={targetRepo}
             onBack={() => setViewMode("overview")}
+            onOpenTeamPage={onOpenTeamPage}
             onSelectFeature={(featId) => {
               const matched = features.find((f) => (f.id || f.feature_id) === featId || (f.name || f.feature_name || "").toLowerCase().includes(featId));
               if (matched) {

@@ -30,7 +30,8 @@ class LLMFeatureCategorizer:
         self,
         repo_name: str,
         commits: list[dict],
-        include_knowledge_graph: bool = True
+        include_knowledge_graph: bool = True,
+        db = None
     ) -> List[FeatureClusterItem]:
         prompt = ChatPromptTemplate.from_messages([
             ("system", """You are a Principal Software Architect analyzing a Git repository's commit history.

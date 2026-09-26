@@ -9,6 +9,7 @@ import { CommitExplorerView } from "./components/CommitExplorerView";
 import { ApiConsoleView } from "./components/ApiConsoleView";
 import { DocViewerModal } from "./components/DocViewerModal";
 import { TokenModal } from "./components/TokenModal";
+import { TeamSuccessionPage } from "./pages/TeamSuccessionPage";
 
 import {
   getToken,
@@ -21,6 +22,7 @@ import {
   categorizeFeatures,
   generateDoc,
   getKnowledgeConcentration,
+  isMockRepo,
 } from "./services/api";
 
 import {
@@ -47,8 +49,8 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  const [repos, setRepos] = useState(MOCK_REPOS);
-  const [selectedRepo, setSelectedRepo] = useState(MOCK_REPOS[0]);
+  const [repos, setRepos] = useState(() => (demoMode ? MOCK_REPOS : []));
+  const [selectedRepo, setSelectedRepo] = useState(() => (demoMode ? MOCK_REPOS[0] : ""));
   const [features, setFeatures] = useState([]);
   const [knowledgeData, setKnowledgeData] = useState(MOCK_KNOWLEDGE_GRAPH);
 
@@ -143,14 +145,21 @@ export default function App() {
         const repoList = await getRepos();
         if (Array.isArray(repoList) && repoList.length > 0) {
           setRepos(repoList);
-          setSelectedRepo(repoList[0]);
-        } else {
+          setSelectedRepo((prev) => {
+            if (!prev || isMockRepo(prev) || !repoList.includes(prev)) {
+              return repoList[0];
+            }
+            return prev;
+          });
+        } else if (demoMode) {
           setRepos(MOCK_REPOS);
           setSelectedRepo(MOCK_REPOS[0]);
         }
       } catch (err) {
-        setRepos(MOCK_REPOS);
-        setSelectedRepo(MOCK_REPOS[0]);
+        if (demoMode) {
+          setRepos(MOCK_REPOS);
+          setSelectedRepo(MOCK_REPOS[0]);
+        }
       }
     }
 
@@ -167,7 +176,8 @@ export default function App() {
         const kg = await getKnowledgeConcentration(selectedRepo, 100);
         setKnowledgeData(kg);
       } catch (err) {
-        if (demoMode) {
+        console.warn("Could not load repo telemetry:", err);
+        if (demoMode || isMockRepo(selectedRepo)) {
           setKnowledgeData(MOCK_KNOWLEDGE_GRAPH);
         }
       } finally {
@@ -177,7 +187,7 @@ export default function App() {
 
     loadRepoTelemetry();
 
-    if (demoMode) {
+    if (demoMode || isMockRepo(selectedRepo)) {
       setFeatures(MOCK_CATEGORIZE_RESPONSE.features);
     } else {
       // In live mode, automatically trigger feature categorization for the active repo
@@ -321,6 +331,7 @@ export default function App() {
               generatingDocId={generatingDocId}
               searchQuery={searchQuery}
               initialDeveloperId={selectedDeveloperId}
+              onOpenTeamPage={() => setActiveTab("team")}
             />
           )}
 
@@ -357,6 +368,17 @@ export default function App() {
             <div className="flex-1 overflow-y-auto max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <ApiConsoleView defaultRepo={selectedRepo} />
             </div>
+          )}
+
+          {activeTab === "team" && (
+            <TeamSuccessionPage
+              selectedRepo={selectedRepo}
+              onNavigateToDeveloper={(devId) => {
+                setSelectedDeveloperId(devId);
+                setActiveTab("workspace");
+              }}
+              showToast={showToast}
+            />
           )}
         </main>
       )}

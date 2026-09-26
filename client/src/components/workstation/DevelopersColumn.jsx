@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, ShieldAlert, CheckCircle2, ChevronLeft, ChevronRight, UserCheck } from "lucide-react";
+import { Users, ShieldAlert, CheckCircle2, ChevronLeft, ChevronRight, UserCheck, Award } from "lucide-react";
 
 export function DevelopersColumn({
   developers = [],
@@ -7,7 +7,9 @@ export function DevelopersColumn({
   onSelectDeveloper = () => {},
   searchQuery = "",
   collapsed = false,
-  onToggleCollapse = () => {}
+  onToggleCollapse = () => {},
+  width = 210,
+  onOpenTeamPage = () => {}
 }) {
   const filteredDevs = developers.filter((dev) => {
     const name = dev.name || dev.developer || "";
@@ -79,7 +81,10 @@ export function DevelopersColumn({
   }
 
   return (
-    <div className="w-52 lg:w-56 shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#080a0f] select-none h-full min-h-0 overflow-hidden font-mono">
+    <div
+      style={{ width: `${width}px` }}
+      className="shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#080a0f] select-none h-full min-h-0 overflow-hidden font-mono"
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0b0e17] shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
@@ -92,13 +97,25 @@ export function DevelopersColumn({
           </span>
         </div>
 
-        <button
-          onClick={onToggleCollapse}
-          title="Collapse Authors Column"
-          className="p-1 rounded text-slate-500 hover:text-white transition"
-        >
-          <ChevronLeft className="h-3.5 w-3.5" />
-        </button>
+        <div className="flex items-center gap-1">
+          {onOpenTeamPage && (
+            <button
+              onClick={onOpenTeamPage}
+              title="Team Roster & Succession Engine"
+              className="p-1 rounded text-[#ffb000] hover:text-[#00ff66] hover:bg-white/5 transition"
+            >
+              <Award className="h-3.5 w-3.5" />
+            </button>
+          )}
+
+          <button
+            onClick={onToggleCollapse}
+            title="Collapse Authors Column"
+            className="p-1 rounded text-slate-500 hover:text-white transition"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* Developer List */}

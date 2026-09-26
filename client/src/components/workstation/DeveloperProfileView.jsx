@@ -15,7 +15,8 @@ import {
   Sparkles,
   ExternalLink,
   GitCommit,
-  RefreshCw
+  RefreshCw,
+  Award
 } from "lucide-react";
 import { DonutChart } from "../DonutChart";
 import { getContributorCommits } from "../../services/api";
@@ -41,7 +42,8 @@ export function DeveloperProfileView({
   developer,
   repoName = "",
   onBack = () => {},
-  onSelectFeature = () => {}
+  onSelectFeature = () => {},
+  onOpenTeamPage = () => {}
 }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [checklist, setChecklist] = useState(
@@ -199,6 +201,17 @@ export function DeveloperProfileView({
                 </div>
               </div>
             </div>
+
+            {onOpenTeamPage && (
+              <button
+                onClick={onOpenTeamPage}
+                className="p-3 rounded-2xl bg-[#ffb000]/10 border border-[#ffb000]/40 hover:bg-[#ffb000] hover:text-black text-[#ffb000] text-xs font-bold transition flex items-center gap-2 shrink-0 cursor-pointer shadow-lg shadow-amber-950/20"
+                title="Open Succession Matrix & Offboard / Reassign Engine"
+              >
+                <Award className="h-4 w-4" />
+                <span>Succession Matrix</span>
+              </button>
+            )}
           </div>
         </div>
 

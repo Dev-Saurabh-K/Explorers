@@ -6,6 +6,7 @@ test_files = [
     "tests/test_knowledge_routes.py",
     "tests/test_ai_categorization_integration.py",
     "tests/test_caching_and_sync.py",
+    "tests/test_team_succession.py",
 ]
 
 
