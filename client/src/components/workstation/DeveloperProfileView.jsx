@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   CheckCircle2,
@@ -14,12 +14,32 @@ import {
   Square,
   Sparkles,
   ExternalLink,
-  GitCommit
+  GitCommit,
+  RefreshCw
 } from "lucide-react";
 import { DonutChart } from "../DonutChart";
+import { getContributorCommits } from "../../services/api";
+
+function formatTimeAgo(dateStr) {
+  if (!dateStr) return "Recent";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  const now = new Date();
+  const diffSec = Math.floor((now - date) / 1000);
+  if (diffSec < 60) return "Just now";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDays = Math.floor(diffHr / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  const diffMonths = Math.floor(diffDays / 30);
+  return `${diffMonths}mo ago`;
+}
 
 export function DeveloperProfileView({
   developer,
+  repoName = "",
   onBack = () => {},
   onSelectFeature = () => {}
 }) {
@@ -32,6 +52,33 @@ export function DeveloperProfileView({
       { id: 4, text: "Conduct knowledge-transfer session", done: true }
     ]
   );
+
+  const [liveContributorCommits, setLiveContributorCommits] = useState([]);
+  const [syncingLive, setSyncingLive] = useState(false);
+
+  const fetchLiveContributorCommits = async (forceRefresh = false) => {
+    if (!repoName || !developer) return;
+    setSyncingLive(true);
+    try {
+      const devName = developer.developer || developer.name || developer.id;
+      const res = await getContributorCommits(repoName, devName, forceRefresh);
+      if (res && res.length > 0) {
+        setLiveContributorCommits(res.map(c => ({
+          sha: (c.sha || "").slice(0, 7),
+          message: c.message || "",
+          date: c.date ? formatTimeAgo(c.date) : "Recent"
+        })));
+      }
+    } catch (err) {
+      console.warn("Could not fetch contributor commits:", err);
+    } finally {
+      setSyncingLive(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveContributorCommits(false);
+  }, [repoName, developer?.name, developer?.developer, developer?.id]);
 
   if (!developer) return null;
 
@@ -63,7 +110,7 @@ export function DeveloperProfileView({
   ];
 
   const affected = developer.affectedStats || { files: 17, services: 4, integrations: 3 };
-  const commitsCount = developer.commitsCount || 142;
+  const commitsCount = (liveContributorCommits.length > 0 ? liveContributorCommits.length : developer.commitsCount) || 142;
 
   const fallbackCommits = [
     { sha: "7fd1a60", message: "feat(core): integrate architecture telemetry & dependency index", date: "2 hours ago" },
@@ -72,9 +119,11 @@ export function DeveloperProfileView({
     { sha: "2c19a3b", message: "docs(spec): document API contracts and data models", date: "5 days ago" }
   ];
 
-  const commitsList = (developer.recentCommits && developer.recentCommits.length > 0)
-    ? developer.recentCommits
-    : fallbackCommits;
+  const commitsList = (liveContributorCommits && liveContributorCommits.length > 0)
+    ? liveContributorCommits
+    : ((developer.recentCommits && developer.recentCommits.length > 0)
+      ? developer.recentCommits
+      : fallbackCommits);
 
   const chartData = primaryAreas.map((area) => ({
     label: area.name,
@@ -503,13 +552,24 @@ export function DeveloperProfileView({
 
             {/* Commits Section */}
             <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <h3 className="text-sm font-bold text-white">
                   Recent Commits by {developer.name}
                 </h3>
-                <span className="text-[11px] font-mono text-slate-400">
-                  {commitsList.length} verified commits
-                </span>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {commitsList.length} verified commits
+                  </span>
+                  <button
+                    onClick={() => fetchLiveContributorCommits(true)}
+                    disabled={syncingLive}
+                    title="Fetch latest commits directly from GitHub"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded bg-black border border-[#00ff66]/40 text-[#00ff66] hover:bg-[#00ff66] hover:text-black transition text-[10px] font-mono font-bold cursor-pointer shadow-sm active:translate-y-0.5"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${syncingLive ? "animate-spin" : ""}`} />
+                    <span>{syncingLive ? "SYNCING..." : "SYNC GITHUB"}</span>
+                  </button>
+                </div>
               </div>
               <div className="space-y-2">
                 {commitsList.map((c, i) => (

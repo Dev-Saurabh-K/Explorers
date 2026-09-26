@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { Plus, Search, FolderGit2, Lock, Globe, ChevronLeft, ChevronRight, Disc3 } from "lucide-react";
+import { Plus, Search, FolderGit2, Lock, Globe, ChevronLeft, ChevronRight, Disc3, RefreshCw } from "lucide-react";
 
 export function RepositoriesColumn({
   repositories = [],
   selectedRepoId = "",
   onSelectRepo = () => {},
   onAddRepo = () => {},
+  onSyncRepo = () => {},
+  isSyncing = false,
   collapsed = false,
   onToggleCollapse = () => {}
 }) {
@@ -32,13 +34,23 @@ export function RepositoriesColumn({
           </div>
         </div>
 
-        <button
-          onClick={onAddRepo}
-          title="Mount New Repo"
-          className="p-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-[#00ff66] hover:border-[#00ff66] transition"
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </button>
+        <div className="flex flex-col items-center gap-2">
+          <button
+            onClick={onSyncRepo}
+            disabled={isSyncing}
+            title="Force refresh live repository data & commits from GitHub"
+            className="p-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-[#00ff66] hover:border-[#00ff66] transition"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-[#00ff66]" : ""}`} />
+          </button>
+          <button
+            onClick={onAddRepo}
+            title="Mount New Repo"
+            className="p-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-[#00ff66] hover:border-[#00ff66] transition"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
     );
   }
@@ -58,6 +70,14 @@ export function RepositoriesColumn({
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={onSyncRepo}
+            disabled={isSyncing}
+            title="Force refresh live repository data & commits from GitHub"
+            className={`p-1 rounded text-slate-400 hover:text-[#00ff66] hover:bg-slate-800 transition ${isSyncing ? "text-[#00ff66]" : ""}`}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+          </button>
           <button
             onClick={onAddRepo}
             title="Mount new repository"

@@ -111,38 +111,38 @@ export async function logoutUser(useRedirect = false) {
 }
 
 // GitHub Data
-export async function getRepos() {
+export async function getRepos(refresh = false) {
   if (isDemoMode()) {
     return MOCK_REPOS;
   }
-  return apiRequest("/github/repos");
+  return apiRequest(`/github/repos${refresh ? "?refresh=true" : ""}`);
 }
 
-export async function getRepoCommits(repo) {
+export async function getRepoCommits(repo, refresh = false) {
   if (isDemoMode()) {
     return MOCK_COMMITS;
   }
-  return apiRequest(`/github/repo/commits?repo=${encodeURIComponent(repo)}`);
+  return apiRequest(`/github/repo/commits?repo=${encodeURIComponent(repo)}${refresh ? "&refresh=true" : ""}`);
 }
 
-export async function getRepoContributors(repo) {
+export async function getRepoContributors(repo, refresh = false) {
   if (isDemoMode()) {
     return MOCK_CONTRIBUTORS;
   }
-  return apiRequest(`/github/repo/contributors?repo=${encodeURIComponent(repo)}`);
+  return apiRequest(`/github/repo/contributors?repo=${encodeURIComponent(repo)}${refresh ? "&refresh=true" : ""}`);
 }
 
-export async function getContributorCommits(repo, contributor) {
+export async function getContributorCommits(repo, contributor, refresh = false) {
   if (isDemoMode()) {
     return MOCK_COMMITS.filter((c) => c.author.toLowerCase().includes(contributor.toLowerCase()));
   }
   return apiRequest(
-    `/github/repo/contributor/commits?repo=${encodeURIComponent(repo)}&contributor=${encodeURIComponent(contributor)}`
+    `/github/repo/contributor/commits?repo=${encodeURIComponent(repo)}&contributor=${encodeURIComponent(contributor)}${refresh ? "&refresh=true" : ""}`
   );
 }
 
 // AI Endpoints
-export async function categorizeFeatures({ repo, max_commits = 50, include_knowledge_graph = true }) {
+export async function categorizeFeatures({ repo, max_commits = 50, include_knowledge_graph = true, refresh = false } = {}) {
   if (isDemoMode()) {
     // Simulate slight delay for realistic experience
     await new Promise((r) => setTimeout(r, 900));
@@ -151,7 +151,7 @@ export async function categorizeFeatures({ repo, max_commits = 50, include_knowl
       repo,
     };
   }
-  return apiRequest("/ai/features/categorize", {
+  return apiRequest(`/ai/features/categorize${refresh ? "?refresh=true" : ""}`, {
     method: "POST",
     body: JSON.stringify({
       repo,
@@ -185,13 +185,27 @@ export async function generateDoc({ repo, feature_id, feature_name, feature_summ
 }
 
 // Knowledge Concentration & Graph Endpoints
-export async function getKnowledgeConcentration(repo, max_commits = 100) {
+export async function getKnowledgeConcentration(repo, max_commits = 100, refresh = false) {
   if (isDemoMode()) {
     return { ...MOCK_KNOWLEDGE_GRAPH, repository: repo };
   }
   return apiRequest(
-    `/github/repo/knowledge-concentration?repo=${encodeURIComponent(repo)}&max_commits=${max_commits}`
+    `/github/repo/knowledge-concentration?repo=${encodeURIComponent(repo)}&max_commits=${max_commits}${refresh ? "&refresh=true" : ""}`
   );
+}
+
+export async function syncRepoData(repo, max_commits = 100) {
+  if (isDemoMode()) {
+    return { success: true, message: "Demo mode sync simulated" };
+  }
+  return apiRequest("/sync", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "repo",
+      repo,
+      max_commits,
+    }),
+  });
 }
 
 export async function getKnowledgeGraph(repo, max_commits = 100) {

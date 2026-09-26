@@ -93,17 +93,50 @@ def get_commit_authors(token, repo_name, limit=None):
 def get_commits_by_contributer(token, repo_name, contributor):
     g = Github(token)
     repo = g.get_repo(repo_name)
-
-    # Filter commits by author login
-    commits = repo.get_commits(author=contributor)
-
     results = []
-    for commit in commits:
-        results.append({
-            "sha": commit.sha,
-            "message": commit.commit.message,
-            "date": commit.commit.author.date.isoformat()
-        })
+
+    # 1. Try filtering by author handle via GitHub API
+    try:
+        commits = repo.get_commits(author=contributor)
+        for commit in commits:
+            date_str = ""
+            if commit.commit and commit.commit.author and commit.commit.author.date:
+                date_str = commit.commit.author.date.isoformat()
+            results.append({
+                "sha": commit.sha,
+                "message": commit.commit.message if commit.commit else "",
+                "date": date_str
+            })
+            if len(results) >= 50:
+                break
+    except Exception:
+        results = []
+
+    # 2. If empty, check recent repository commits matching username or name
+    if not results:
+        try:
+            target = contributor.strip().lower()
+            all_commits = repo.get_commits()
+            count = 0
+            for commit in all_commits:
+                login = (commit.author.login if commit.author else "").lower()
+                author_name = (commit.commit.author.name if commit.commit and commit.commit.author else "").lower()
+                if target == login or target in login or target in author_name or author_name in target:
+                    date_str = ""
+                    if commit.commit and commit.commit.author and commit.commit.author.date:
+                        date_str = commit.commit.author.date.isoformat()
+                    results.append({
+                        "sha": commit.sha,
+                        "message": commit.commit.message if commit.commit else "",
+                        "date": date_str
+                    })
+                    if len(results) >= 50:
+                        break
+                count += 1
+                if count >= 100:
+                    break
+        except Exception:
+            pass
 
     return results
 
