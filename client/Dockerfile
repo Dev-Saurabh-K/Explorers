@@ -7,12 +7,16 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source code
+# Copy source code (includes .env when present in the build context)
 COPY . .
 
-# Vite embeds environment variables in the static bundle at build time.
+# Vite inlines VITE_* at build time. Optional override (does not blank .env):
+#   docker build --build-arg VITE_API_BASE_URL=https://backend.gitocx.duckdns.org .
 ARG VITE_API_BASE_URL
-RUN if [ -n "$VITE_API_BASE_URL" ]; then VITE_API_BASE_URL="$VITE_API_BASE_URL" npm run build; else unset VITE_API_BASE_URL && npm run build; fi
+RUN if [ -n "$VITE_API_BASE_URL" ]; then printf 'VITE_API_BASE_URL=%s\n' "$VITE_API_BASE_URL" > .env.production.local; fi
+
+# Build production files
+RUN npm run build
 
 
 # Stage 2: Serve with Nginx

@@ -8,8 +8,14 @@ import {
   MOCK_GENERATE_DOC_RESPONSE,
 } from "./mockData";
 
-const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
-export const API_BASE_URL = (configuredApiBaseUrl || "http://localhost:8000").replace(/\/+$/, "");
+function resolveApiBaseUrl() {
+  const value = String(import.meta.env.VITE_API_BASE_URL || "")
+    .trim()
+    .replace(/\/+$/, "");
+  return value || "http://localhost:8000";
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 // Helper to retrieve token
 export function getToken() {
