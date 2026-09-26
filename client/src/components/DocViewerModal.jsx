@@ -194,7 +194,7 @@ export function DocViewerModal({ doc, onClose }) {
         {/* Footer info */}
         <div className="px-6 py-3 border-t border-slate-800 bg-[#090d16] flex items-center justify-between text-xs text-slate-500 font-mono">
           <span>Target File: docs/{doc.filename}</span>
-          <span>Synthesized with Gemini 1.5 Flash Chain</span>
+          <span>Synthesized via AI Telemetry Engine</span>
         </div>
       </div>
     </div>

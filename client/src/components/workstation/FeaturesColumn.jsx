@@ -116,7 +116,7 @@ export function FeaturesColumn({
           <button
             onClick={onClusterNew}
             disabled={isCategorizing}
-            title="Extract features using Gemini AI"
+            title="Extract & cluster features"
             className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#ffb000] hover:bg-[#00ff66] text-black font-bold text-[10px] uppercase shadow-[1px_1px_0px_#000] transition active:translate-x-0.5 active:translate-y-0.5"
           >
             <Sparkles className={`h-3 w-3 ${isCategorizing ? "animate-spin" : ""}`} />
@@ -223,7 +223,7 @@ export function FeaturesColumn({
               DECOMPILING COMMITS...
             </p>
             <p className="text-[9px] text-slate-500">
-              Gemini 2.5 Flash clustering
+              Synthesizing semantic feature clusters
             </p>
           </div>
         )}

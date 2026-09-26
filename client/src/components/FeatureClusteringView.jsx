@@ -84,7 +84,7 @@ export function FeatureClusteringView({
               </h2>
             </div>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Analyzes repository git log in bulk using Gemini LLM. It clusters commits into logical product capabilities, computes developer concentration telemetry, and prepares documentation templates.
+              Analyzes repository git log in bulk using the AI telemetry engine. It clusters commits into logical product capabilities, computes developer concentration telemetry, and prepares documentation templates.
             </p>
           </div>
 
@@ -321,7 +321,7 @@ export function FeatureClusteringView({
           </div>
           <h3 className="text-lg font-bold text-white mb-1">No Features Clustered Yet</h3>
           <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">
-            Click <strong className="text-cyan-300">"Extract Features"</strong> above to inspect the repository commits with Gemini AI.
+            Click <strong className="text-cyan-300">"Extract Features"</strong> above to inspect the repository commits with the semantic AI engine.
           </p>
           <button
             onClick={() => onCategorize({ max_commits: maxCommits, include_knowledge_graph: includeKnowledge })}

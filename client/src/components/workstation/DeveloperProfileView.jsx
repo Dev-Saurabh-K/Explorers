@@ -44,14 +44,13 @@ export function DeveloperProfileView({
   onSelectFeature = () => {}
 }) {
   const [activeTab, setActiveTab] = useState("overview");
-  const [checklist, setChecklist] = useState(
-    developer?.suggestedActions || [
-      { id: 1, text: "Document payment architecture", done: true },
-      { id: 2, text: "Assign secondary reviewer", done: true },
-      { id: 3, text: "Add integration tests", done: true },
-      { id: 4, text: "Conduct knowledge-transfer session", done: true }
-    ]
-  );
+  const [checklist, setChecklist] = useState(() => developer?.suggestedActions || []);
+
+  useEffect(() => {
+    if (developer?.suggestedActions) {
+      setChecklist(developer.suggestedActions);
+    }
+  }, [developer?.suggestedActions]);
 
   const [liveContributorCommits, setLiveContributorCommits] = useState([]);
   const [syncingLive, setSyncingLive] = useState(false);
@@ -89,9 +88,12 @@ export function DeveloperProfileView({
   };
 
   const getAreaIcon = (name) => {
-    if (name.includes("Payment")) return <CreditCard className="h-4 w-4 text-yellow-400" />;
-    if (name.includes("Auth")) return <Lock className="h-4 w-4 text-cyan-400" />;
-    if (name.includes("Order")) return <Package className="h-4 w-4 text-purple-400" />;
+    const n = (name || "").toLowerCase();
+    if (n.includes("auth") || n.includes("login") || n.includes("security")) return <Lock className="h-4 w-4 text-cyan-400" />;
+    if (n.includes("db") || n.includes("database") || n.includes("persist") || n.includes("sql")) return <Server className="h-4 w-4 text-emerald-400" />;
+    if (n.includes("api") || n.includes("route") || n.includes("server") || n.includes("backend")) return <Network className="h-4 w-4 text-purple-400" />;
+    if (n.includes("ui") || n.includes("front") || n.includes("view") || n.includes("theme")) return <FileCode2 className="h-4 w-4 text-yellow-400" />;
+    if (n.includes("ai") || n.includes("llm") || n.includes("model")) return <Sparkles className="h-4 w-4 text-pink-400" />;
     return <FileCode2 className="h-4 w-4 text-slate-400" />;
   };
 
@@ -99,38 +101,47 @@ export function DeveloperProfileView({
     developer.knowledge_percentage ??
     developer.commit_percentage ??
     developer.overall_contribution ??
-    (developer.percentage || 65)
+    (developer.percentage || 100)
   );
 
-  const primaryAreas = developer.primaryAreas || [
-    { name: "Payment", percentage: 42, color: "#facc15" },
-    { name: "Authentication", percentage: 28, color: "#22d3ee" },
-    { name: "Order Processing", percentage: 18, color: "#c084fc" },
-    { name: "Others", percentage: 12, color: "#94a3b8" }
-  ];
+  const primaryAreas = developer.primaryAreas && developer.primaryAreas.length > 0
+    ? developer.primaryAreas
+    : [
+        {
+          id: "core",
+          name: repoName ? `${repoName.split('/').pop()} Core Architecture` : "Core Architecture",
+          commits: developer.commitsCount || 1,
+          commitsCount: developer.commitsCount || 1,
+          featureOwnership: overallPercentage,
+          percentage: overallPercentage,
+          distributionPercentage: 100,
+          color: "#ffb000"
+        }
+      ];
 
-  const affected = developer.affectedStats || { files: 17, services: 4, integrations: 3 };
-  const commitsCount = (liveContributorCommits.length > 0 ? liveContributorCommits.length : developer.commitsCount) || 142;
-
-  const fallbackCommits = [
-    { sha: "7fd1a60", message: "feat(core): integrate architecture telemetry & dependency index", date: "2 hours ago" },
-    { sha: "4bc912a", message: "fix(pipeline): optimize commit ingestion & knowledge heuristics", date: "1 day ago" },
-    { sha: "8821dfe", message: "refactor(services): streamline event bus handlers and queue workers", date: "3 days ago" },
-    { sha: "2c19a3b", message: "docs(spec): document API contracts and data models", date: "5 days ago" }
-  ];
+  const affected = developer.affectedStats || { files: 1, services: 1, integrations: 1 };
+  const commitsCount = (liveContributorCommits.length > 0 ? liveContributorCommits.length : developer.commitsCount) || 1;
 
   const commitsList = (liveContributorCommits && liveContributorCommits.length > 0)
     ? liveContributorCommits
     : ((developer.recentCommits && developer.recentCommits.length > 0)
       ? developer.recentCommits
-      : fallbackCommits);
+      : [
+          {
+            sha: "7fd1a60",
+            message: `feat(${repoName ? repoName.split('/').pop() : "core"}): update architecture implementation`,
+            date: "Recent"
+          }
+        ]);
 
+  // Chart data: values are proportional to the developer's authored commits across areas (adds up to 100%)
   const chartData = primaryAreas.map((area) => ({
     label: area.name,
     name: area.name,
-    value: area.percentage,
-    percentage: area.percentage,
-    color: area.color
+    value: area.commitsCount || area.commits || area.distributionPercentage || 1,
+    count: area.commitsCount || area.commits || 1,
+    percentage: area.distributionPercentage ?? 100,
+    color: area.color || "#ffb000"
   }));
 
   return (
@@ -272,27 +283,42 @@ export function DeveloperProfileView({
               
               {/* Primary Areas */}
               <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Primary Areas
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Primary Areas
+                  </h3>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    {primaryAreas.length} subsystems
+                  </span>
+                </div>
                 <div className="space-y-2">
-                  {primaryAreas.slice(0, 3).map((area, i) => (
+                  {primaryAreas.slice(0, 4).map((area, i) => (
                     <button
                       key={i}
-                      onClick={() => onSelectFeature(area.name.toLowerCase().replace(/\s+/g, "-"))}
-                      className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-yellow-400/40 transition-all text-xs group"
+                      onClick={() => onSelectFeature((area.id || area.feature_id || area.name).toLowerCase().replace(/\s+/g, "-"))}
+                      className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-yellow-400/40 transition-all text-xs group cursor-pointer"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="p-1.5 rounded-lg bg-slate-800 border border-slate-700">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 shrink-0">
                           {getAreaIcon(area.name)}
                         </div>
-                        <span className="font-bold text-white group-hover:text-yellow-300 transition-colors">
-                          {area.name}
-                        </span>
+                        <div className="text-left truncate">
+                          <span className="font-bold text-white group-hover:text-yellow-300 transition-colors block truncate">
+                            {area.name}
+                          </span>
+                          <span className="text-[10px] text-slate-400 block mt-0.5">
+                            {area.commits} commit{area.commits > 1 ? "s" : ""} • {area.distributionPercentage}% of work
+                          </span>
+                        </div>
                       </div>
-                      <span className="font-mono text-yellow-400 font-semibold">
-                        {area.percentage}% ownership
-                      </span>
+                      <div className="text-right font-mono shrink-0 ml-2">
+                        <div className="text-yellow-400 font-bold">
+                          {area.featureOwnership ?? area.percentage}%
+                        </div>
+                        <div className="text-[9px] text-slate-500 uppercase">
+                          ownership
+                        </div>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -305,16 +331,16 @@ export function DeveloperProfileView({
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5 text-center">
-                    <div className="text-xl font-black text-white">{affected.files}</div>
+                    <div className="text-xl font-black text-white font-mono">{affected.files}</div>
                     <div className="text-[11px] text-slate-400 mt-0.5">Files</div>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5 text-center">
-                    <div className="text-xl font-black text-white">{affected.services}</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">Services</div>
+                    <div className="text-xl font-black text-white font-mono">{affected.services}</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">Features</div>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5 text-center">
-                    <div className="text-xl font-black text-white">{affected.integrations}</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">Integrations</div>
+                    <div className="text-xl font-black text-white font-mono">{affected.integrations}</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">Domains</div>
                   </div>
                 </div>
               </div>
@@ -325,7 +351,7 @@ export function DeveloperProfileView({
                   <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
                     Knowledge Concentration
                   </div>
-                  <div className="text-xl font-black text-red-400">
+                  <div className="text-xl font-black text-red-400 font-mono">
                     {developer.riskLevel || "HIGH"}
                   </div>
                 </div>
@@ -334,8 +360,8 @@ export function DeveloperProfileView({
                   <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
                     Documentation Gaps
                   </div>
-                  <div className="text-xl font-black text-yellow-400">
-                    {developer.documentationGaps || 12}
+                  <div className="text-xl font-black text-yellow-400 font-mono">
+                    {developer.documentationGaps || 0}
                   </div>
                 </div>
               </div>
@@ -348,34 +374,45 @@ export function DeveloperProfileView({
               {/* Contribution Distribution (Donut Chart) */}
               <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 shadow-xl flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
-                    Contribution Distribution
-                  </h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      Contribution Distribution
+                    </h3>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      By subsystem commits
+                    </span>
+                  </div>
 
                   <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
                     <DonutChart
                       data={chartData}
+                      totalValue={commitsCount}
                       centerTitle={`${commitsCount}`}
                       centerSubtitle="Commits"
                       size={180}
                       strokeWidth={22}
                     />
 
-                    <div className="space-y-2.5 min-w-[140px]">
+                    <div className="space-y-2.5 min-w-[150px] max-w-[200px]">
                       {primaryAreas.map((area, i) => (
                         <div key={i} className="flex items-center justify-between text-xs gap-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
                             <span
                               className="w-2.5 h-2.5 rounded-full shrink-0"
                               style={{ backgroundColor: area.color || "#facc15" }}
                             />
-                            <span className="text-slate-300 font-medium truncate max-w-[90px]">
+                            <span className="text-slate-300 font-medium truncate max-w-[100px]" title={area.name}>
                               {area.name}
                             </span>
                           </div>
-                          <span className="font-mono font-bold text-slate-200">
-                            {area.percentage}%
-                          </span>
+                          <div className="text-right font-mono shrink-0">
+                            <span className="font-bold text-slate-200">
+                              {area.distributionPercentage ?? area.percentage}%
+                            </span>
+                            <span className="text-[10px] text-slate-500 ml-1">
+                              ({area.commits})
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -390,9 +427,14 @@ export function DeveloperProfileView({
 
               {/* Suggested Actions Checklist */}
               <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Suggested Actions
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Suggested Actions
+                  </h3>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    Dynamic Telemetry
+                  </span>
+                </div>
                 <div className="space-y-2.5">
                   {checklist.map((item) => (
                     <button
@@ -519,12 +561,17 @@ export function DeveloperProfileView({
 
               {/* Module-by-Module Contribution Breakdown */}
               <div className="pt-2">
-                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
-                  Contribution Breakdown by Module
-                </h4>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Contribution Breakdown by Module
+                  </h4>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    Normalized authored commit share
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {primaryAreas.map((area, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-slate-900/40 border border-white/5 flex flex-col justify-between gap-2">
+                    <div key={i} className="p-3.5 rounded-xl bg-slate-900/40 border border-white/5 flex flex-col justify-between gap-2.5">
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2 truncate">
                           <span
@@ -532,14 +579,24 @@ export function DeveloperProfileView({
                             style={{ backgroundColor: area.color || "#ffb000" }}
                           />
                           <span className="font-semibold text-slate-200 truncate">{area.name}</span>
+                          <span className="text-[10px] text-slate-500 font-mono shrink-0">
+                            ({area.commits} commit{area.commits > 1 ? "s" : ""})
+                          </span>
                         </div>
-                        <span className="font-mono font-bold text-[#ffb000] shrink-0">{area.percentage}%</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-black text-yellow-400 border border-yellow-400/30 font-mono">
+                            {area.featureOwnership ?? area.percentage}% ownership
+                          </span>
+                          <span className="font-mono font-bold text-[#ffb000]">
+                            {area.distributionPercentage ?? area.percentage}%
+                          </span>
+                        </div>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-300"
                           style={{
-                            width: `${area.percentage}%`,
+                            width: `${area.distributionPercentage ?? area.percentage}%`,
                             backgroundColor: area.color || "#ffb000"
                           }}
                         />
@@ -589,22 +646,37 @@ export function DeveloperProfileView({
 
         {activeTab === "knowledge-map" && (
           <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-4">
-            <h3 className="text-sm font-bold text-white mb-2">
-              Knowledge Map & Ownership Heuristics
-            </h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-white">
+                Knowledge Map & Ownership Heuristics
+              </h3>
+              <span className="text-[10px] text-slate-500 font-mono">
+                Real-time Subsystem Concentration
+              </span>
+            </div>
             <div className="space-y-3">
               {primaryAreas.map((area, i) => (
-                <div key={i} className="p-3 rounded-xl bg-slate-900/60 border border-white/5 text-xs">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-bold text-white">{area.name}</span>
-                    <span className="font-mono text-yellow-400 font-bold">{area.percentage}%</span>
+                <div key={i} className="p-3.5 rounded-xl bg-slate-900/60 border border-white/5 text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: area.color || "#ffb000" }} />
+                      <span className="font-bold text-white text-sm">{area.name}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">[{area.category || "Module"}]</span>
+                    </div>
+                    <div className="flex items-center gap-3 font-mono">
+                      <span className="text-[10px] text-slate-400">{area.commits} commits</span>
+                      <span className="text-yellow-400 font-bold">{area.featureOwnership ?? area.percentage}% Ownership</span>
+                    </div>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full"
-                      style={{ width: `${area.percentage}%`, backgroundColor: area.color || "#facc15" }}
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{ width: `${area.featureOwnership ?? area.percentage}%`, backgroundColor: area.color || "#facc15" }}
                     />
                   </div>
+                  {area.summary && (
+                    <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{area.summary}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -612,23 +684,53 @@ export function DeveloperProfileView({
         )}
 
         {activeTab === "gaps" && (
-          <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-3">
-            <h3 className="text-sm font-bold text-white mb-2">
-              Identified Documentation Gaps ({developer.documentationGaps || 12})
-            </h3>
-            <div className="space-y-2 text-xs">
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-amber-500/20 text-slate-300">
-                <span className="text-amber-400 font-bold mr-2">Gap #1</span>
-                Missing sequence diagram for Payment refund webhook idempotency.
-              </div>
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-amber-500/20 text-slate-300">
-                <span className="text-amber-400 font-bold mr-2">Gap #2</span>
-                Undocumented fallback route for OAuth token refresh under Redis downtime.
-              </div>
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-amber-500/20 text-slate-300">
-                <span className="text-amber-400 font-bold mr-2">Gap #3</span>
-                Order state machine deadlock handling when inventory lock times out.
-              </div>
+          <div className="p-5 rounded-2xl bg-[#0e121d] border border-white/5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white">
+                Identified Documentation Gaps ({(developer.realGaps || []).length})
+              </h3>
+              <span className="text-[10px] text-slate-500 font-mono">
+                Real-time Telemetry Diagnostics
+              </span>
+            </div>
+            <div className="space-y-3">
+              {(developer.realGaps && developer.realGaps.length > 0 ? developer.realGaps : [
+                {
+                  id: "gap-1",
+                  title: `Architectural specification for ${primaryAreas[0]?.name || "Core Module"}`,
+                  description: `@${developer.name} is a primary author (${primaryAreas[0]?.featureOwnership || overallPercentage}% share). Subsystem contracts should be generated.`,
+                  risk: developer.isDominant ? "HIGH" : "MEDIUM",
+                  feature_name: primaryAreas[0]?.name
+                }
+              ]).map((gap, i) => (
+                <div key={gap.id || i} className="p-3.5 rounded-xl bg-slate-900/60 border border-amber-500/20 text-slate-300 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-400 font-bold text-xs font-mono">Gap #{i + 1}</span>
+                      <span className="font-semibold text-white text-xs">{gap.title}</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${
+                      gap.risk === "HIGH" ? "bg-red-500/10 text-red-400 border border-red-500/30" : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/30"
+                    }`}>
+                      [{gap.risk || "MEDIUM"} RISK]
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                    {gap.description}
+                  </p>
+                  {gap.feature_name && (
+                    <div className="pt-1 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                      <span>Subsystem: {gap.feature_name}</span>
+                      <button
+                        onClick={() => onSelectFeature((gap.feature_id || gap.feature_name).toLowerCase().replace(/\s+/g, "-"))}
+                        className="text-[#00e5ff] hover:underline cursor-pointer flex items-center gap-1"
+                      >
+                        View & Decompile Spec →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}

@@ -38,11 +38,12 @@ export function DevelopersColumn({
         <div className="flex-1 overflow-y-auto min-h-0 py-2 px-1.5 space-y-2 w-full flex flex-col items-center">
           {filteredDevs.map((dev, idx) => {
             const id = dev.id || dev.developer || `dev-${idx}`;
-            const name = dev.name || dev.developer;
-            const isSelected = selectedDeveloperId === id || selectedDeveloperId === name;
+            const rawName = dev.name || dev.developer || `dev-${idx}`;
+            const name = rawName.replace(/^@+/, "");
+            const isSelected = selectedDeveloperId === id || selectedDeveloperId === name || selectedDeveloperId === `@${name}`;
             const isDominant = dev.isDominant || dev.is_dominant || idx === 0;
-            const percentage = dev.knowledge_percentage ?? dev.commit_percentage ?? (dev.percentage || 50);
-            const avatar = dev.avatar || dev.avatar_url || `https://ui-avatars.com/api/?name=${name}&background=0c0f18&color=00ff66`;
+            const percentage = dev.percentage ?? dev.knowledge_percentage ?? dev.commit_percentage ?? dev.overall_contribution ?? 0;
+            const avatar = dev.avatar || dev.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0c0f18&color=00ff66`;
 
             return (
               <button
@@ -105,11 +106,12 @@ export function DevelopersColumn({
       <div className="flex-1 overflow-y-auto min-h-0 p-1.5 space-y-1">
         {filteredDevs.map((dev, idx) => {
           const id = dev.id || dev.developer || `dev-${idx}`;
-          const name = dev.name || dev.developer;
-          const isSelected = selectedDeveloperId === id || selectedDeveloperId === name;
+          const rawName = dev.name || dev.developer || `dev-${idx}`;
+          const name = rawName.replace(/^@+/, "");
+          const isSelected = selectedDeveloperId === id || selectedDeveloperId === name || selectedDeveloperId === `@${name}`;
           const isDominant = dev.isDominant || dev.is_dominant || idx === 0;
-          const percentage = dev.knowledge_percentage ?? dev.commit_percentage ?? (dev.percentage || 50);
-          const avatar = dev.avatar || dev.avatar_url || `https://ui-avatars.com/api/?name=${name}&background=0c0f18&color=00ff66`;
+          const percentage = dev.percentage ?? dev.knowledge_percentage ?? dev.commit_percentage ?? dev.overall_contribution ?? 0;
+          const avatar = dev.avatar || dev.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0c0f18&color=00ff66`;
 
           return (
             <button

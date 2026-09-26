@@ -79,7 +79,7 @@ const ENDPOINTS = [
     name: "AI Feature Categorization",
     method: "POST",
     path: "/ai/features/categorize",
-    desc: "Clusters commits into product features with Gemini LLM",
+    desc: "Clusters commits into product features with AI semantic engine",
     auth: true,
     params: {},
     body: JSON.stringify(

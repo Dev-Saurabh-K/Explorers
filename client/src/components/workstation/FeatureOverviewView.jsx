@@ -69,18 +69,18 @@ export function FeatureOverviewView({
   const riskLevel = feature.riskLevel || feature.knowledge_graph?.risk_level || "MEDIUM";
   const riskBadge = feature.riskBadge || feature.knowledge_graph?.risk_summary || `${riskLevel} concentration`;
 
-  // Dynamic Contributors: Priority: feature.contributors -> feature.knowledge_graph.developers -> knowledgeData.overall_developers
+  // Dynamic Contributors: Priority: feature.knowledge_graph.developers -> feature.contributors -> knowledgeData.overall_developers
   let contributors = [];
-  if (feature.contributors && feature.contributors.length > 0) {
-    contributors = feature.contributors;
-  } else if (feature.knowledge_graph?.developers && feature.knowledge_graph.developers.length > 0) {
+  if (feature.knowledge_graph?.developers && feature.knowledge_graph.developers.length > 0) {
     contributors = feature.knowledge_graph.developers.map((d, i) => ({
       name: d.developer,
       percentage: Math.round(d.knowledge_percentage ?? d.commit_percentage ?? (100 / feature.knowledge_graph.developers.length)),
       commits: d.commit_count || 1,
       color: d.color || (i === 0 ? "#ffb000" : i === 1 ? "#ff3366" : "#00e5ff"),
-      avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${d.developer}&background=0c0f18&color=00e5ff`
+      avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.developer)}&background=0c0f18&color=00e5ff`
     }));
+  } else if (feature.contributors && feature.contributors.length > 0) {
+    contributors = feature.contributors;
   } else if (knowledgeData?.overall_developers && knowledgeData.overall_developers.length > 0) {
     // Inherit from overall repository developers
     contributors = knowledgeData.overall_developers.map((d, i) => ({
@@ -88,13 +88,28 @@ export function FeatureOverviewView({
       percentage: Math.round(d.knowledge_percentage ?? d.commit_percentage ?? (100 / knowledgeData.overall_developers.length)),
       commits: d.commit_count || 1,
       color: d.color || (i === 0 ? "#ffb000" : i === 1 ? "#ff3366" : "#00e5ff"),
-      avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${d.developer}&background=0c0f18&color=00e5ff`
+      avatar: d.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.developer)}&background=0c0f18&color=00e5ff`
     }));
   } else {
     // Fallback single lead maintainer
     contributors = [
       { name: "Lead Maintainer", percentage: 100, commits: commitsCount, color: "#ffb000", avatar: `https://ui-avatars.com/api/?name=Lead&background=0c0f18&color=ffb000` }
     ];
+  }
+
+  // Ensure contributor percentages normalize to exactly 100%
+  if (contributors.length > 0) {
+    const totalC = contributors.reduce((s, c) => s + (c.commits || 0), 0);
+    if (totalC > 0) {
+      contributors = contributors.map(c => ({
+        ...c,
+        percentage: Math.round(((c.commits || 1) / totalC) * 100)
+      }));
+      const sumPct = contributors.reduce((s, c) => s + c.percentage, 0);
+      if (sumPct > 0 && sumPct !== 100) {
+        contributors[0].percentage += (100 - sumPct);
+      }
+    }
   }
 
   // Dynamic Files
@@ -153,7 +168,7 @@ export function FeatureOverviewView({
       ];
     } else if (cat.includes("ai") || cat.includes("gemini")) {
       integrations = [
-        { name: "Gemini 2.5 Flash", status: "Active", type: "Semantic LLM", latency: "380ms" },
+        { name: "Semantic Engine", status: "Active", type: "Intelligence Pipeline", latency: "380ms" },
         { name: "PyGithub Core", status: "Active", type: "Commit Ingestion", latency: "140ms" }
       ];
     } else {

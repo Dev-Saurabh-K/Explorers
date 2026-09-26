@@ -73,17 +73,19 @@ export function KnowledgeGraphView({
 
   // Prepare chart items matching Image 1
   const donutData = overall_developers.map((dev, idx) => {
+    const rawDev = dev.developer || "dev";
+    const cleanDev = rawDev.replace(/^@+/, "");
     const pct = Number((dev.knowledge_percentage ?? dev.commit_percentage ?? 0).toFixed(1));
     const isDominant = dev.is_dominant || idx === 0;
     return {
-      name: `@${dev.developer}`,
-      developer: dev.developer,
+      name: `@${cleanDev}`,
+      developer: cleanDev,
       value: pct,
       percentage: pct,
       commits: dev.commit_count,
       is_dominant: isDominant,
       color: dev.color || (idx === 0 ? "#ffb000" : idx === 1 ? "#ff3366" : idx === 2 ? "#00e5ff" : "#00ff66"),
-      avatar: dev.avatar_url || `https://ui-avatars.com/api/?name=${dev.developer}&background=0b0e17&color=00e5ff`
+      avatar: dev.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanDev)}&background=0b0e17&color=00e5ff`
     };
   });
 

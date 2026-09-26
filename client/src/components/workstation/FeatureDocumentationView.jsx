@@ -100,9 +100,9 @@ export function FeatureDocumentationView({
   } else if (catLower.includes("ai")) {
     archLabels = {
       client: "GitOcx Cyberdeck",
-      service: "Gemini 2.5 Flash Decompiler",
+      service: "Semantic AST Decompiler",
       database: "Knowledge Telemetry DB",
-      external: "Google Generative AI"
+      external: "AI Intelligence Pipeline"
     };
   } else if (catLower.includes("db")) {
     archLabels = {

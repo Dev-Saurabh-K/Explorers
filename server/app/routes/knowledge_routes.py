@@ -62,11 +62,23 @@ async def get_repository_knowledge_concentration(
             detail=f"No commits found for repository '{repo}'"
         )
 
+    # Check if features categorization exists for this repo to include feature breakdown
+    cached_features = CacheService.get_feature_categorization(db, current_user.id, repo)
+    feature_breakdown = []
+    if cached_features and "features" in cached_features:
+        for f_data in (cached_features["features"] or []):
+            kg = f_data.get("knowledge_graph")
+            if kg:
+                try:
+                    feature_breakdown.append(FeatureKnowledgeGraph(**kg))
+                except Exception:
+                    pass
+
     # Calculate overall repo knowledge graph
     repo_graph = knowledge_service.calculate_repository_knowledge(
         repo_name=repo,
         all_commits=raw_commits,
-        feature_breakdown=[]
+        feature_breakdown=feature_breakdown
     )
     repo_dict = repo_graph.model_dump()
     CacheService.set_repo_knowledge_graph(db, current_user.id, repo, "concentration", repo_dict)

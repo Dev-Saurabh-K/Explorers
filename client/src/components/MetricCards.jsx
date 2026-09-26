@@ -142,7 +142,7 @@ export function MetricCards({ knowledgeData, totalFeatures }) {
           </span>
         </div>
         <p className="mt-2 text-xs text-slate-400">
-          Mapped via Gemini LLM clustering
+          Mapped via AI feature clustering
         </p>
       </div>
     </div>
