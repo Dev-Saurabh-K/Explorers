@@ -8,6 +8,8 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    allowedHosts: true
+    allowedHosts: [
+      'gitocx.duckdns.org',
+    ],
   }
 })
