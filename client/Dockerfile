@@ -10,8 +10,9 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build production files
-RUN npm run build
+# Vite embeds environment variables in the static bundle at build time.
+ARG VITE_API_BASE_URL
+RUN if [ -n "$VITE_API_BASE_URL" ]; then VITE_API_BASE_URL="$VITE_API_BASE_URL" npm run build; else unset VITE_API_BASE_URL && npm run build; fi
 
 
 # Stage 2: Serve with Nginx
