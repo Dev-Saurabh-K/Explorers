@@ -10,7 +10,6 @@ import {
   SignOutIcon,
   ChevronDownIcon,
   PersonIcon,
-  LinkExternalIcon,
   MarkGithubIcon
 } from "@primer/octicons-react";
 import { API_BASE_URL } from "../services/api";
@@ -237,15 +236,6 @@ export function Navbar({
                       <span>Custom GitHub Token</span>
                     </button>
 
-                    <a
-                      href={`${API_BASE_URL}/docs`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="github-menu-item"
-                    >
-                      <LinkExternalIcon size={16} />
-                      <span>FastAPI Swagger Spec</span>
-                    </a>
                   </div>
 
                   <div style={{ borderTop: "1px solid var(--border-muted)", margin: "4px 0" }} />
