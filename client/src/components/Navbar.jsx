@@ -38,14 +38,8 @@ export function Navbar({
       <div className="w-full px-4 sm:px-6">
         <div className="flex items-center justify-between h-14 gap-3 sm:gap-6">
           
-          {/* Left: Window Controls + Logo */}
+          {/* Left: Logo */}
           <div className="flex items-center gap-4 shrink-0">
-            {/* Window control dots (matching desktop mockup) */}
-            <div className="hidden sm:flex items-center gap-1.5 pr-2">
-              <span className="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors shadow-sm" />
-              <span className="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors shadow-sm" />
-              <span className="w-3 h-3 rounded-full bg-emerald-500/80 hover:bg-emerald-500 transition-colors shadow-sm" />
-            </div>
 
             {/* GitOcx Brand */}
             <div
