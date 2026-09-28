@@ -130,7 +130,7 @@ const Mountains = () => {
 // Login Page
 // ─────────────────────────────────────────────────────────────
 
-export default function LoginPage() {
+export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) {
   const handleLogin = (e) => {
     e.preventDefault();
 
@@ -138,7 +138,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-page">
+    <div className={`login-page ${theme === "light" ? "light-mode" : ""}`}>
 
       {/* ═══════════════════════════════════════════════════════
           BACKGROUND
@@ -167,13 +167,6 @@ export default function LoginPage() {
 
       <header className="topbar">
 
-        {/* macOS style controls */}
-        <div className="window-controls">
-          <span className="window-red" />
-          <span className="window-yellow" />
-          <span className="window-green" />
-        </div>
-
         {/* Brand */}
         <div className="nav-brand">
 
@@ -187,10 +180,30 @@ export default function LoginPage() {
 
         </div>
 
-        {/* Sign in */}
-        <button className="signin-button">
-          Sign In
-        </button>
+        {/* Right actions: Theme toggle + Sign in */}
+        <div className="topbar-right">
+          <button
+            onClick={onToggleTheme}
+            type="button"
+            className="theme-toggle-btn"
+            title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+          >
+            {theme === "light" ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#facc15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+              </svg>
+            )}
+          </button>
+
+          <button className="signin-button" onClick={handleLogin}>
+            Sign In
+          </button>
+        </div>
 
       </header>
 
@@ -453,38 +466,34 @@ export default function LoginPage() {
 
 
         /* =====================================================
-           WINDOW CONTROLS
+           TOPBAR ACTIONS
         ===================================================== */
 
-        .window-controls {
+        .topbar-right {
           display: flex;
-
           align-items: center;
-
-          gap: 9px;
-
-          width: 82px;
+          gap: 12px;
+          margin-left: auto;
         }
 
-        .window-controls span {
-          display: block;
-
-          width: 15px;
-          height: 15px;
-
-          border-radius: 50%;
+        .theme-toggle-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 38px;
+          height: 38px;
+          border-radius: 11px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: #f1f5f9;
+          cursor: pointer;
+          transition: all 0.2s ease;
         }
 
-        .window-red {
-          background: #ff3b30;
-        }
-
-        .window-yellow {
-          background: #ffbd2e;
-        }
-
-        .window-green {
-          background: #00c851;
+        .theme-toggle-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(255, 255, 255, 0.25);
+          transform: translateY(-1px);
         }
 
 
@@ -1530,6 +1539,104 @@ export default function LoginPage() {
             animation: none !important;
           }
 
+        /* =====================================================
+           LIGHT MODE
+        ===================================================== */
+
+        .login-page.light-mode {
+          background: radial-gradient(
+            ellipse at 50% 5%,
+            #ffffff 0%,
+            #f1f5f9 45%,
+            #e2e8f0 100%
+          );
+          color: #0f172a;
+        }
+
+        .login-page.light-mode .sky-glow {
+          background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.12) 0%, transparent 65%);
+        }
+
+        .login-page.light-mode .stars {
+          opacity: 0.2;
+        }
+
+        .login-page.light-mode .mountain-back {
+          background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+          opacity: 0.35;
+        }
+
+        .login-page.light-mode .mountain-left,
+        .login-page.light-mode .mountain-right {
+          background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
+          opacity: 0.25;
+        }
+
+        .login-page.light-mode .mountain-front {
+          background: linear-gradient(180deg, #64748b 0%, #475569 100%);
+          opacity: 0.2;
+        }
+
+        .login-page.light-mode .topbar {
+          background: rgba(255, 255, 255, 0.88);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .login-page.light-mode .theme-toggle-btn {
+          background: rgba(0, 0, 0, 0.05);
+          border-color: rgba(0, 0, 0, 0.12);
+          color: #0f172a;
+        }
+
+        .login-page.light-mode .theme-toggle-btn:hover {
+          background: rgba(0, 0, 0, 0.1);
+          border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .login-page.light-mode .nav-brand-text {
+          color: #0f172a;
+        }
+
+        .login-page.light-mode .hero-title {
+          color: #0f172a;
+          text-shadow: none;
+        }
+
+        .login-page.light-mode .hero-tagline {
+          color: #1e293b;
+        }
+
+        .login-page.light-mode .hero-description {
+          color: #475569;
+        }
+
+        .login-page.light-mode .trust-text {
+          color: #64748b;
+        }
+
+        .login-page.light-mode .token-button {
+          background: rgba(0, 0, 0, 0.04);
+          border-color: rgba(0, 0, 0, 0.12);
+          color: #334155;
+        }
+
+        .login-page.light-mode .token-button:hover {
+          background: rgba(0, 0, 0, 0.08);
+          color: #0f172a;
+        }
+
+        .login-page.light-mode .bottom-bar {
+          background: rgba(255, 255, 255, 0.88);
+          border-top: 1px solid rgba(0, 0, 0, 0.08);
+          color: #64748b;
+        }
+
+        .login-page.light-mode .mvp-text {
+          color: #475569;
+        }
+
+        .login-page.light-mode .version {
+          color: #64748b;
         }
 
       `}</style>

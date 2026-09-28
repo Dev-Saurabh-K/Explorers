@@ -36,6 +36,35 @@ export default function App() {
   const [token, setTokenState] = useState(getToken);
   const [demoMode, setDemoModeState] = useState(false);
 
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("gitocx_theme") || "dark";
+    }
+    return "dark";
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "light") {
+      root.classList.remove("dark");
+      root.classList.add("light");
+      root.setAttribute("data-theme", "light");
+    } else {
+      root.classList.remove("light");
+      root.classList.add("dark");
+      root.setAttribute("data-theme", "dark");
+    }
+    try {
+      localStorage.setItem("gitocx_theme", theme);
+    } catch {
+      // ignore
+    }
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -271,11 +300,19 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#08090d] text-slate-100 flex flex-col font-sans selection:bg-yellow-400/30 selection:text-yellow-200">
+    <div className={`h-screen w-screen overflow-hidden flex flex-col font-sans transition-colors duration-200 ${
+      theme === "light"
+        ? "bg-slate-50 text-slate-900 selection:bg-yellow-400/40 selection:text-slate-900"
+        : "bg-[#08090d] text-slate-100 selection:bg-yellow-400/30 selection:text-yellow-200"
+    }`}>
       
       {/* Toast Notification with Cyber Yellow Glow */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#0f131f]/95 border border-yellow-400/40 text-yellow-300 text-xs px-4 py-3 rounded-xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex items-center gap-2.5 glow-yellow-sm">
+        <div className={`fixed bottom-6 right-6 z-50 text-xs px-4 py-3 rounded-xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex items-center gap-2.5 ${
+          theme === "light"
+            ? "bg-white/95 border border-yellow-500/40 text-slate-800 shadow-yellow-500/10"
+            : "bg-[#0f131f]/95 border border-yellow-400/40 text-yellow-300 glow-yellow-sm"
+        }`}>
           <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />
           <span className="font-semibold">{toastMessage}</span>
         </div>
@@ -292,6 +329,8 @@ export default function App() {
           onSelectTab={setActiveTab}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
           onSelectDeveloper={(devId) => {
             setSelectedDeveloperId(devId);
             setActiveTab("workspace");
@@ -302,7 +341,7 @@ export default function App() {
       {/* Main Content Area */}
       {!user && !demoMode ? (
         <main className="flex-1 w-full overflow-y-auto">
-          <LoginPage />
+          <LoginPage theme={theme} onToggleTheme={handleToggleTheme} />
         </main>
       ) : (
         <main className="flex-1 w-full flex flex-col overflow-hidden min-h-0">
