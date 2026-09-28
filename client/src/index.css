@@ -111,6 +111,8 @@ html.dark {
   --contribution-2: #006d32;
   --contribution-3: #26a641;
   --contribution-4: #39d353;
+  --chart-track: #3d444d;
+  --chart-core: #0d1117;
 
   /* Aliases */
   --bg-app: var(--bg-default);
@@ -177,6 +179,8 @@ html.light {
   --contribution-2: #40c463;
   --contribution-3: #30a14e;
   --contribution-4: #216e39;
+  --chart-track: #d1d9e0;
+  --chart-core: #ffffff;
 
   /* Aliases */
   --bg-app: var(--bg-default);
@@ -785,9 +789,30 @@ html.dark .github-menu {
 }
 
 .text-slate-400,
-.text-slate-500 {
+.text-slate-500,
+.text-slate-600 {
   color: var(--fg-muted) !important;
 }
+
+.text-slate-700,
+.text-slate-800,
+.text-slate-900 {
+  color: var(--fg-default) !important;
+}
+
+/* Convert remaining legacy cyberpunk utility colors into Primer semantics. */
+.text-\[\#00e5ff\], .text-cyan-300, .text-cyan-400 { color: var(--accent-fg) !important; }
+.text-\[\#00ff66\], .text-emerald-400 { color: var(--success-fg) !important; }
+.text-\[\#ffb000\], .text-amber-400, .text-yellow-400 { color: var(--attention-fg) !important; }
+.text-\[\#ff3366\], .text-red-400 { color: var(--danger-fg) !important; }
+.border-\[\#00e5ff\], .border-cyan-500 { border-color: var(--accent-fg) !important; }
+.border-\[\#00ff66\], .border-emerald-500 { border-color: var(--success-emphasis) !important; }
+.border-\[\#ffb000\], .border-amber-500, .border-yellow-400 { border-color: var(--attention-fg) !important; }
+.border-\[\#ff3366\], .border-red-500 { border-color: var(--danger-emphasis) !important; }
+.bg-\[\#00e5ff\], .bg-cyan-600 { background-color: var(--accent-emphasis) !important; color: #fff !important; }
+.bg-\[\#00ff66\], .bg-emerald-600 { background-color: var(--success-emphasis) !important; color: #fff !important; }
+.bg-\[\#ffb000\], .bg-amber-500 { background-color: var(--attention-fg) !important; color: #fff !important; }
+.bg-\[\#ff3366\], .bg-red-600 { background-color: var(--danger-emphasis) !important; color: #fff !important; }
 
 /* Radii overrides: apply restrained 6px radius */
 .rounded-xl,

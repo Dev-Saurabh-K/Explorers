@@ -195,10 +195,10 @@ export function FeatureOverviewView({
         className="p-4 sm:p-5 shrink-0 z-10"
         style={{ backgroundColor: "var(--bg-default)", borderBottom: "1px solid var(--border-default)" }}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start gap-3">
           
           {/* Feature Identity */}
-          <div className="flex items-start gap-3 min-w-0">
+          <div className="flex items-start gap-3 min-w-0 overflow-hidden">
             <div
               className="p-2 shrink-0 mt-0.5"
               style={{
@@ -210,7 +210,7 @@ export function FeatureOverviewView({
             >
               {getIcon()}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1 overflow-hidden">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 style={{ fontSize: "16px", fontWeight: 600, color: "var(--fg-default)" }} className="truncate">
                   {fname}
@@ -226,9 +226,10 @@ export function FeatureOverviewView({
                       ? "badge-attention"
                       : "badge-success"
                   }`}
-                  style={{ fontSize: "11px", padding: "1px 6px" }}
+                  title={riskBadge}
+                  style={{ fontSize: "11px", padding: "1px 6px", maxWidth: "100%", minWidth: 0 }}
                 >
-                  {riskBadge}
+                  <span className="truncate">{riskBadge}</span>
                 </span>
               </div>
               <p style={{ fontSize: "14px", color: "var(--fg-muted)", marginTop: "4px", lineHeight: "1.5" }} className="line-clamp-2">
@@ -241,7 +242,7 @@ export function FeatureOverviewView({
           <button
             onClick={() => onGenerateDoc(feature)}
             disabled={isGenerating}
-            className="github-button github-button-primary shrink-0 self-start sm:self-center"
+            className="github-button github-button-primary shrink-0 self-start"
             style={{ height: "32px", fontSize: "14px" }}
           >
             <Sparkles className={`h-3.5 w-3.5 ${isGenerating ? "animate-spin" : ""}`} />
@@ -250,7 +251,7 @@ export function FeatureOverviewView({
         </div>
 
         {/* Sub-Navigation Tabs */}
-        <div className="flex items-center gap-2 mt-4" style={{ borderBottom: "1px solid var(--border-muted)" }}>
+        <div className="flex items-center gap-2 mt-4 overflow-x-auto" style={{ borderBottom: "1px solid var(--border-muted)" }}>
           <button
             onClick={() => setActiveSubTab("overview")}
             className={`github-tab ${activeSubTab === "overview" ? "active" : ""}`}
