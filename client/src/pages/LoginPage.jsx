@@ -239,7 +239,7 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
           <a
             href="#"
             onClick={handleLogin}
-            className="github-button"
+            className="github-hero-btn"
           >
             <GithubIcon size={23} />
 
@@ -1101,7 +1101,7 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
            GITHUB BUTTON
         ===================================================== */
 
-        .github-button {
+        .github-hero-btn {
           position: relative;
 
           width:
@@ -1152,7 +1152,7 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
         }
 
 
-        .github-button:hover {
+        .github-hero-btn:hover {
           transform:
             translateY(-3px)
             scale(1.015);
@@ -1169,7 +1169,7 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
         }
 
 
-        .github-button:active {
+        .github-hero-btn:active {
           transform:
             translateY(0)
             scale(1);
@@ -1424,7 +1424,7 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
           }
 
 
-          .github-button {
+          .github-hero-btn {
             min-height: 66px;
 
             font-size: 16px;
@@ -1506,7 +1506,7 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
           }
 
 
-          .github-button {
+          .github-hero-btn {
             width: 92vw;
           }
 

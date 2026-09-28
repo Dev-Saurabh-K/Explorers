@@ -185,99 +185,102 @@ export function FeatureOverviewView({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0 bg-[#080a0f] overflow-hidden font-mono select-none">
+    <div
+      className="flex-1 flex flex-col h-full min-h-0 overflow-hidden select-none"
+      style={{ backgroundColor: "var(--bg-default)", color: "var(--fg-default)", fontFamily: "var(--font-sans)" }}
+    >
       
       {/* Top Header */}
-      <div className="p-4 sm:p-5 border-b border-[#00ff66]/20 bg-[#0c0e16] shrink-0 z-10">
+      <div
+        className="p-4 sm:p-5 shrink-0 z-10"
+        style={{ backgroundColor: "var(--bg-default)", borderBottom: "1px solid var(--border-default)" }}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
           {/* Feature Identity */}
           <div className="flex items-start gap-3 min-w-0">
-            <div className="p-2.5 rounded-xl bg-black border border-[#00e5ff]/40 shadow-[0_0_12px_rgba(0,229,255,0.15)] shrink-0 mt-0.5">
+            <div
+              className="p-2 shrink-0 mt-0.5"
+              style={{
+                borderRadius: "6px",
+                border: "1px solid var(--border-default)",
+                backgroundColor: "var(--bg-muted)",
+                color: "var(--accent-fg)"
+              }}
+            >
               {getIcon()}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base sm:text-lg font-black text-white tracking-wide truncate">
+                <h1 style={{ fontSize: "16px", fontWeight: 600, color: "var(--fg-default)" }} className="truncate">
                   {fname}
                 </h1>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-black text-[#00ff66] border border-[#00ff66]/40 font-bold uppercase">
-                  TAG: {category}
+                <span className="badge" style={{ fontSize: "11px", padding: "1px 6px" }}>
+                  {category}
+                </span>
+                <span
+                  className={`badge ${
+                    riskLevel === "HIGH" || riskLevel === "CRITICAL"
+                      ? "badge-danger"
+                      : riskLevel === "MEDIUM"
+                      ? "badge-attention"
+                      : "badge-success"
+                  }`}
+                  style={{ fontSize: "11px", padding: "1px 6px" }}
+                >
+                  {riskBadge}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed line-clamp-2">
+              <p style={{ fontSize: "14px", color: "var(--fg-muted)", marginTop: "4px", lineHeight: "1.5" }} className="line-clamp-2">
                 {summary}
               </p>
             </div>
           </div>
 
-          {/* Generate Documentation Action (Protected from being cut off!) */}
+          {/* Generate Documentation Action */}
           <button
             onClick={() => onGenerateDoc(feature)}
             disabled={isGenerating}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-[#ffb000] hover:bg-[#00ff66] text-black font-extrabold text-xs uppercase tracking-wider rounded-lg shadow-[2px_2px_0px_#000] transition active:translate-x-0.5 active:translate-y-0.5 shrink-0 self-start sm:self-center border border-white whitespace-nowrap cursor-pointer"
+            className="github-button github-button-primary shrink-0 self-start sm:self-center"
+            style={{ height: "32px", fontSize: "14px" }}
           >
             <Sparkles className={`h-3.5 w-3.5 ${isGenerating ? "animate-spin" : ""}`} />
-            <span>{isGenerating ? "[DECOMPILING SPEC...]" : "[DECOMPILE .MD DOCS]"}</span>
+            <span>{isGenerating ? "Generating..." : "Generate Docs"}</span>
           </button>
         </div>
 
         {/* Sub-Navigation Tabs */}
-        <div className="flex items-center gap-4 sm:gap-6 mt-4 border-b border-white/5 text-xs font-semibold">
+        <div className="flex items-center gap-2 mt-4" style={{ borderBottom: "1px solid var(--border-muted)" }}>
           <button
             onClick={() => setActiveSubTab("overview")}
-            className={`pb-2 transition relative ${
-              activeSubTab === "overview"
-                ? "text-[#00e5ff] font-bold"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className={`github-tab ${activeSubTab === "overview" ? "active" : ""}`}
+            style={{ fontSize: "14px", padding: "6px 12px" }}
           >
             Overview
-            {activeSubTab === "overview" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
-            )}
           </button>
 
           <button
             onClick={() => setActiveSubTab("files")}
-            className={`pb-2 transition relative ${
-              activeSubTab === "files"
-                ? "text-[#00e5ff] font-bold"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className={`github-tab ${activeSubTab === "files" ? "active" : ""}`}
+            style={{ fontSize: "14px", padding: "6px 12px" }}
           >
             Files ({files.length})
-            {activeSubTab === "files" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
-            )}
           </button>
 
           <button
             onClick={() => setActiveSubTab("commits")}
-            className={`pb-2 transition relative ${
-              activeSubTab === "commits"
-                ? "text-[#00e5ff] font-bold"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className={`github-tab ${activeSubTab === "commits" ? "active" : ""}`}
+            style={{ fontSize: "14px", padding: "6px 12px" }}
           >
             Commits ({commitsCount})
-            {activeSubTab === "commits" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
-            )}
           </button>
 
           <button
             onClick={() => setActiveSubTab("integrations")}
-            className={`pb-2 transition relative ${
-              activeSubTab === "integrations"
-                ? "text-[#00e5ff] font-bold"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className={`github-tab ${activeSubTab === "integrations" ? "active" : ""}`}
+            style={{ fontSize: "14px", padding: "6px 12px" }}
           >
             Integrations ({integrations.length})
-            {activeSubTab === "integrations" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
-            )}
           </button>
         </div>
       </div>

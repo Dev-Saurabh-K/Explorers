@@ -386,24 +386,44 @@ export function CommitologyWorkspace({
           />
         ) : (
           /* Empty Features State with 1-click Decompile Action */
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center font-mono bg-[#080a0f]">
-            <div className="p-4 rounded-2xl bg-black border border-[#00e5ff]/40 shadow-[0_0_25px_rgba(0,229,255,0.15)] max-w-md w-full space-y-4">
-              <div className="text-center">
-                <span className="text-3xl">⚡</span>
-                <h2 className="text-sm font-black text-white uppercase tracking-wider mt-2">
-                  Semantic Feature Decompiler Ready
+          <div
+            className="flex-1 flex flex-col items-center justify-center p-8 text-center"
+            style={{ backgroundColor: "var(--bg-default)" }}
+          >
+            <div
+              className="github-card github-card-padding-lg max-w-md w-full text-center space-y-4 shadow-sm"
+              style={{ borderRadius: "6px", border: "1px solid var(--border-default)" }}
+            >
+              <div>
+                <div
+                  className="mx-auto flex items-center justify-center mb-3"
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    background: "var(--accent-muted)",
+                    color: "var(--accent-fg)"
+                  }}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                </div>
+                <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--fg-default)" }}>
+                  Semantic Feature Decompiler
                 </h2>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Repository <span className="text-[#00e5ff] font-bold">"{selectedRepoId}"</span> is mounted. Decompile raw git commits into functional architecture features.
+                <p style={{ fontSize: "14px", color: "var(--fg-muted)", marginTop: "6px", lineHeight: "1.5" }}>
+                  Repository <span style={{ fontWeight: 600, color: "var(--fg-default)" }}>"{selectedRepoId}"</span> is mounted. Decompile raw git commits into architectural feature clusters and telemetry.
                 </p>
               </div>
 
               <button
                 onClick={() => onCategorizeFeatures({ max_commits: 50, include_knowledge_graph: true })}
                 disabled={isCategorizing}
-                className="w-full py-3 bg-[#ffb000] hover:bg-[#00ff66] text-black font-black uppercase tracking-wider text-xs rounded border border-white shadow-[2px_2px_0px_#000] transition active:translate-x-0.5 active:translate-y-0.5"
+                className="github-button github-button-primary w-full"
+                style={{ height: "36px", fontSize: "14px" }}
               >
-                {isCategorizing ? "[DECOMPILING COMMITS VIA GEMINI 2.5 FLASH...]" : "► INITIALIZE CLUSTER SCAN"}
+                {isCategorizing ? "Decompiling commits with AI..." : "Initialize Feature Scan"}
               </button>
             </div>
           </div>
