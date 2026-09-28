@@ -18,8 +18,6 @@ export function Navbar({
   user,
   onLogout,
   onOpenTokenModal,
-  demoMode,
-  onToggleDemoMode,
   activeTab,
   onSelectTab,
   searchQuery = "",
@@ -138,18 +136,6 @@ export function Navbar({
         {/* Right: Actions + Theme + Avatar */}
         <div className="flex items-center gap-2 shrink-0">
           
-          {/* Demo Mode Toggle (if callback provided) */}
-          {onToggleDemoMode && (
-            <button
-              onClick={onToggleDemoMode}
-              className={`github-button github-button-sm ${demoMode ? "badge-attention" : ""}`}
-              title="Toggle interactive demo mode"
-              style={{ fontSize: "12px" }}
-            >
-              {demoMode ? "Demo Mode" : "Live API"}
-            </button>
-          )}
-
           {/* Theme Switcher Button (32px, 6px radius, Octicon) */}
           <button
             onClick={onToggleTheme}

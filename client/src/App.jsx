@@ -33,8 +33,9 @@ import {
 } from "./services/mockData";
 
 export default function App() {
+  const isDemoRoute = typeof window !== "undefined" && window.location.pathname.replace(/\/+$/, "") === "/demo";
   const [token, setTokenState] = useState(getToken);
-  const [demoMode, setDemoModeState] = useState(false);
+  const [demoMode, setDemoModeState] = useState(isDemoRoute);
 
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -64,6 +65,11 @@ export default function App() {
   const handleToggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
+
+  // Demo data is intentionally route-gated: open /demo to enable it.
+  useEffect(() => {
+    setDemoMode(isDemoRoute);
+  }, [isDemoRoute]);
 
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -100,8 +106,8 @@ export default function App() {
       if (urlToken) {
         setToken(urlToken);
         setTokenState(urlToken);
-        setDemoMode(false);
-        setDemoModeState(false);
+        setDemoMode(isDemoRoute);
+        setDemoModeState(isDemoRoute);
         window.history.replaceState({}, document.title, window.location.pathname);
         showToast("Authenticated with GitHub successfully!");
       } else if (urlError) {
@@ -274,28 +280,8 @@ export default function App() {
       setToken(null);
       setTokenState(null);
       setUser(null);
-      setDemoMode(false);
-      setDemoModeState(false);
-    }
-  };
-
-  const handleToggleDemoMode = () => {
-    const next = !demoMode;
-    setDemoMode(next);
-    setDemoModeState(next);
-    if (next) {
-      setUser(MOCK_USER);
-      setRepos(MOCK_REPOS);
-      setSelectedRepo(MOCK_REPOS[0]);
-      setFeatures(MOCK_CATEGORIZE_RESPONSE.features);
-      setKnowledgeData(MOCK_KNOWLEDGE_GRAPH);
-      showToast("Switched to Interactive Demo Mode (Mock data)");
-    } else {
-      const curToken = getToken();
-      if (!curToken) {
-        setUser(null);
-      }
-      showToast("Switched to Live API Mode");
+      setDemoMode(isDemoRoute);
+      setDemoModeState(isDemoRoute);
     }
   };
 
@@ -325,8 +311,6 @@ export default function App() {
           user={user}
           onLogout={handleLogout}
           onOpenTokenModal={() => setTokenModalOpen(true)}
-          demoMode={demoMode}
-          onToggleDemoMode={handleToggleDemoMode}
           activeTab={activeTab}
           onSelectTab={setActiveTab}
           searchQuery={searchQuery}
