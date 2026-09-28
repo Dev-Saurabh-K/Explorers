@@ -8,10 +8,10 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, rootDir, "");
-  const apiBaseUrl = String(env.VITE_API_BASE_URL || "http://localhost:8000")
+  const apiBaseUrl = String(env.VITE_API_BASE_URL || "https://explorers-77tr.onrender.com")
     .trim()
     .replace(/\/+$/, "");
-  const extraHosts = String(env.VITE_DEV_ALLOWED_HOSTS || "")
+  const extraHosts = String(env.VITE_DEV_ALLOWED_HOSTS || "https://explorers-77tr.onrender.com")
     .split(",")
     .map((host) => host.trim())
     .filter(Boolean);
@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
       allowedHosts: ["gitocx.duckdns.org", ...extraHosts],
       hmr: {
         protocol: "wss",
-        host: extraHosts[0] || "gitocx.duckdns.org",
+        host: extraHosts[0] || "https://explorers-77tr.onrender.com" ,
         clientPort: 443,
       },
     },
