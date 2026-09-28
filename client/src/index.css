@@ -2,46 +2,209 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root, html.dark {
-  --bg-app: #08090d;
-  --bg-primary: #08090d;
-  --bg-secondary: #0b0e17;
-  --bg-panel: #0d111a;
-  --bg-card: #121620;
-  --bg-card-hover: #161b26;
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --text-1: #f8fafc;
-  --text-2: #94a3b8;
-  --text-3: #64748b;
-  --text-primary: #f8fafc;
-  --text-muted: #94a3b8;
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+/* =====================================================
+   1. GITHUB PRIMER DESIGN FOUNDATION & TOKENS
+===================================================== */
+
+:root {
+  /* Typography */
+  --font-sans:
+    "Mona Sans",
+    "Mona Sans VF",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Noto Sans",
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  --font-mono:
+    ui-monospace,
+    SFMono-Regular,
+    SF Mono,
+    Menlo,
+    Consolas,
+    Liberation Mono,
+    monospace;
+
+  /* Typography scale */
+  --text-display: 40px;
+  --text-title-lg: 32px;
+  --text-title-md: 20px;
+  --text-title-sm: 16px;
+  --text-body-lg: 16px;
+  --text-body-md: 14px;
+  --text-body-sm: 12px;
+  --text-caption: 12px;
+  --text-code: 13px;
+
+  /* Spacing (4px base grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius (Restrained 6px GitHub style) */
+  --radius-sm: 6px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  --radius-small: 6px;
+  --radius-medium: 6px;
+  --radius-large: 12px;
+}
+
+/* =====================================================
+   2. DARK MODE (DEFAULT)
+===================================================== */
+
+:root,
+[data-theme="dark"],
+html.dark {
+  --bg-default: #0d1117;
+  --bg-muted: #161b22;
+  --bg-subtle: #161b22;
+  --bg-inset: #0d1117;
+  --bg-emphasis: #25292e;
+
+  --fg-default: #f0f6fc;
+  --fg-muted: #9198a1;
+  --fg-subtle: #656d76;
+  --fg-disabled: #656d76;
+
+  --border-default: #3d444d;
+  --border-muted: #3d444d;
+  --border-subtle: #21262d;
+
+  --accent-fg: #4493f8;
+  --accent-emphasis: #4493f8;
+  --accent-muted: #388bfd26;
+
+  --success-fg: #3fb950;
+  --success-emphasis: #1f883d;
+  --success-muted: #23863666;
+
+  --attention-fg: #d29922;
+  --attention-muted: #9e6a0326;
+
+  --danger-fg: #f85149;
+  --danger-emphasis: #da3633;
+  --danger-muted: #da363326;
+
+  --done-fg: #a371f7;
+  --done-muted: #8957e526;
+
+  --sponsors-fg: #db61a2;
+  --sponsors-muted: #db61a226;
+
+  --contribution-0: #161b22;
+  --contribution-1: #0e4429;
+  --contribution-2: #006d32;
+  --contribution-3: #26a641;
+  --contribution-4: #39d353;
+
+  /* Aliases */
+  --bg-app: var(--bg-default);
+  --bg-primary: var(--bg-default);
+  --bg-secondary: var(--bg-muted);
+  --bg-panel: var(--bg-default);
+  --bg-card: var(--bg-default);
+  --bg-card-hover: var(--bg-muted);
+  --glass-border: var(--border-default);
+  --border-color: var(--border-default);
+  --text-1: var(--fg-default);
+  --text-2: var(--fg-muted);
+  --text-3: var(--fg-subtle);
+  --text-primary: var(--fg-default);
+  --text-muted: var(--fg-muted);
+
   color-scheme: dark;
 }
 
+/* =====================================================
+   3. LIGHT MODE
+===================================================== */
+
+[data-theme="light"],
 html.light {
-  --bg-app: #f8fafc;
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
-  --bg-panel: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f8fafc;
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-subtle: rgba(0, 0, 0, 0.05);
-  --text-1: #0f172a;
-  --text-2: #334155;
-  --text-3: #64748b;
-  --text-primary: #0f172a;
-  --text-muted: #64748b;
+  --bg-default: #ffffff;
+  --bg-muted: #f6f8fa;
+  --bg-subtle: #f6f8fa;
+  --bg-inset: #f6f8fa;
+  --bg-emphasis: #25292e;
+
+  --fg-default: #1f2328;
+  --fg-muted: #59636e;
+  --fg-subtle: #6e7781;
+  --fg-disabled: #818b98;
+
+  --border-default: #d1d9e0;
+  --border-muted: #d8dee4;
+  --border-subtle: #d8dee4;
+
+  --accent-fg: #0969da;
+  --accent-emphasis: #0969da;
+  --accent-muted: #ddf4ff;
+
+  --success-fg: #1a7f37;
+  --success-emphasis: #1f883d;
+  --success-muted: #dafbe1;
+
+  --attention-fg: #9a6700;
+  --attention-muted: #fff8c5;
+
+  --danger-fg: #d1242f;
+  --danger-emphasis: #cf222e;
+  --danger-muted: #ffebe9;
+
+  --done-fg: #8250df;
+  --done-muted: #fbefff;
+
+  --sponsors-fg: #bf3989;
+  --sponsors-muted: #ffeff7;
+
+  --contribution-0: #ebedf0;
+  --contribution-1: #9be9a8;
+  --contribution-2: #40c463;
+  --contribution-3: #30a14e;
+  --contribution-4: #216e39;
+
+  /* Aliases */
+  --bg-app: var(--bg-default);
+  --bg-primary: var(--bg-default);
+  --bg-secondary: var(--bg-muted);
+  --bg-panel: var(--bg-default);
+  --bg-card: var(--bg-default);
+  --bg-card-hover: var(--bg-muted);
+  --glass-border: var(--border-default);
+  --border-color: var(--border-default);
+  --text-1: var(--fg-default);
+  --text-2: var(--fg-muted);
+  --text-3: var(--fg-subtle);
+  --text-primary: var(--fg-default);
+  --text-muted: var(--fg-muted);
+
   color-scheme: light;
 }
 
+/* =====================================================
+   4. BASE APPLICATION STYLES
+===================================================== */
+
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
+
   html, body, #root {
     height: 100%;
     width: 100%;
@@ -51,346 +214,596 @@ html.light {
   }
 
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: var(--bg-app);
-    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: var(--bg-default);
+    color: var(--fg-default);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  
+
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+
+  a {
+    color: var(--accent-fg);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
   code, pre, kbd {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9285em;
   }
 }
 
-/* Custom dark scrollbars */
+/* Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10, 12, 18, 0.8);
+  background: var(--bg-default);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(250, 204, 21, 0.25);
-  border-radius: 9999px;
+  background: var(--border-default);
+  border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(250, 204, 21, 0.5);
-}
-
-/* High-tech glassmorphism & Glow styling */
-.glass-panel {
-  background: rgba(14, 17, 25, 0.78);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-card {
-  background: rgba(18, 22, 32, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.glass-card:hover {
-  border-color: rgba(250, 204, 21, 0.3);
-}
-
-/* Yellow & Retro Neon Glows */
-.glow-yellow {
-  box-shadow: 0 0 35px -5px rgba(250, 204, 21, 0.35);
-}
-
-.glow-yellow-sm {
-  box-shadow: 0 0 15px -2px rgba(250, 204, 21, 0.3);
-}
-
-.glow-purple {
-  box-shadow: 0 0 35px -5px rgba(192, 132, 252, 0.35);
-}
-
-.glow-cyan {
-  box-shadow: 0 0 35px -5px rgba(34, 211, 238, 0.3);
-}
-
-.glow-rose {
-  box-shadow: 0 0 35px -5px rgba(244, 63, 94, 0.35);
-}
-
-/* Subtle animations */
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.02);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes grid-move {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 0 40px;
-  }
-}
-
-.retro-grid-lines {
-  background-image: linear-gradient(to right, rgba(250, 204, 21, 0.15) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(250, 204, 21, 0.15) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-/* CRT Scanlines Overlay */
-.crt-scanlines {
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
-              linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-  background-size: 100% 3px, 3px 100%;
-}
-
-/* Phosphor and Neon Glows */
-.glow-phosphor-green {
-  box-shadow: 0 0 20px -3px rgba(0, 255, 102, 0.35);
-}
-
-.glow-amber-crt {
-  box-shadow: 0 0 20px -3px rgba(255, 176, 0, 0.35);
-}
-
-.glow-cyan-crt {
-  box-shadow: 0 0 20px -3px rgba(0, 229, 255, 0.35);
-}
-
-/* Beveled cyberdeck hardware border */
-.cyber-bezel {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.08), inset -1px -1px 0px rgba(0, 0, 0, 0.6);
-}
-
-.cyber-button {
-  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
-  transition: all 0.1s ease;
-}
-
-.cyber-button:active {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.8);
+  background: var(--fg-subtle);
 }
 
 /* =====================================================
-   LIGHT MODE SYSTEM OVERRIDES
+   5. GITHUB PRIMER COMPONENTS SPECIFICATION
 ===================================================== */
 
-html.light body,
-html.light #root {
-  background-color: #f8fafc;
-  color: #0f172a;
+/* 5.1 Buttons */
+.github-button {
+  height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--bg-muted);
+  color: var(--fg-default);
+  cursor: pointer;
+  transition: 80ms cubic-bezier(0.33, 1, 0.68, 1);
+  user-select: none;
 }
 
-/* Light mode scrollbars */
-html.light ::-webkit-scrollbar-track {
-  background: rgba(241, 245, 249, 0.95);
+.github-button:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-muted);
 }
 
-html.light ::-webkit-scrollbar-thumb {
-  background: rgba(203, 213, 225, 0.9);
-  border-radius: 9999px;
+.github-button:active {
+  background: var(--bg-inset);
 }
 
-html.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 1);
+.github-button:disabled {
+  color: var(--fg-disabled);
+  background: var(--bg-muted);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
-/* Glass panels & cards */
-html.light .glass-panel {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-}
-
-html.light .glass-card {
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.04);
-}
-
-html.light .glass-card:hover {
-  border-color: rgba(234, 179, 8, 0.6);
-  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.08);
-}
-
-/* Light backgrounds for workstation panels, modals, and content surfaces */
-html.light .bg-\[\#08090d\],
-html.light .bg-\[\#090d16\],
-html.light .bg-\[\#07080d\],
-html.light .bg-\[\#090b10\],
-html.light .bg-\[\#0a0c13\],
-html.light .bg-\[\#0a0d14\],
-html.light .bg-\[\#0b0e15\],
-html.light .bg-\[\#0b0e16\],
-html.light .bg-\[\#0b0e17\],
-html.light .bg-\[\#0c0e16\],
-html.light .bg-\[\#0c101a\],
-html.light .bg-\[\#0d1322\],
-html.light .bg-\[\#0e121d\],
-html.light .bg-\[\#0e121e\],
-html.light .bg-\[\#0f131d\],
-html.light .bg-\[\#0f131f\],
-html.light .bg-\[\#10141f\],
-html.light .bg-\[\#101b1f\],
-html.light .bg-\[\#110e14\],
-html.light .bg-\[\#111622\],
-html.light .bg-\[\#111928\],
-html.light .bg-\[\#121622\],
-html.light .bg-\[\#121620\],
-html.light .bg-\[\#131926\],
-html.light .bg-\[\#141923\],
-html.light .bg-\[\#161208\],
-html.light .bg-\[\#161b26\],
-html.light .bg-\[\#180a0f\],
-html.light .bg-\[\#1a1f2e\],
-html.light .bg-\[\#1e2330\] {
-  background-color: #ffffff !important;
-}
-
-/* Secondary/sidebar column backgrounds in light mode */
-html.light .bg-\[\#07090e\],
-html.light .bg-\[\#080a0f\],
-html.light .bg-\[\#08090f\],
-html.light .bg-\[\#0c0f18\] {
-  background-color: #f8fafc !important;
-}
-
-html.light .bg-\[\#101b22\] {
-  background-color: #f1f5f9 !important;
-}
-
-html.light .bg-black {
-  background-color: #ffffff !important;
-}
-
-html.light .bg-slate-950,
-html.light .bg-slate-900,
-html.light .bg-slate-900\/90,
-html.light .bg-slate-900\/80,
-html.light .bg-slate-900\/70,
-html.light .bg-slate-900\/60,
-html.light .bg-slate-900\/50,
-html.light .bg-slate-900\/40 {
-  background-color: #ffffff !important;
-}
-
-html.light .bg-slate-800,
-html.light .bg-slate-800\/90,
-html.light .bg-slate-800\/80,
-html.light .bg-slate-800\/60,
-html.light .bg-slate-800\/50,
-html.light .bg-slate-800\/40 {
-  background-color: #f8fafc !important;
-}
-
-html.light .hover\:bg-slate-900:hover,
-html.light .hover\:bg-slate-900\/60:hover,
-html.light .hover\:bg-slate-800:hover,
-html.light .hover\:bg-slate-800\/60:hover,
-html.light .hover\:bg-white\/5:hover {
-  background-color: #f1f5f9 !important;
-}
-
-/* Borders in light mode */
-html.light .border-white\/5,
-html.light .border-white\/10,
-html.light .border-white\/15,
-html.light .border-white\/20,
-html.light .border-slate-800,
-html.light .border-slate-800\/60,
-html.light .border-slate-700,
-html.light .border-slate-700\/60 {
-  border-color: #e2e8f0 !important;
-}
-
-/* Crisp text colors in light mode */
-html.light .text-white,
-html.light .text-slate-100 {
-  color: #0f172a !important;
-}
-
-html.light .text-slate-200 {
-  color: #1e293b !important;
-}
-
-html.light .text-slate-300 {
-  color: #334155 !important;
-}
-
-html.light .text-slate-400 {
-  color: #64748b !important;
-}
-
-/* Preserve bright high-contrast text on solid color buttons */
-html.light button.bg-yellow-400,
-html.light button.bg-yellow-400 span,
-html.light button.bg-yellow-300,
-html.light .bg-yellow-400 .text-slate-950,
-html.light [class*="bg-yellow-"] [class*="text-slate-950"] {
-  color: #020617 !important;
-}
-
-html.light .bg-red-500,
-html.light .bg-red-500 span,
-html.light .bg-red-600,
-html.light .bg-red-600 span,
-html.light .bg-emerald-500,
-html.light .bg-emerald-500 span,
-html.light .bg-emerald-600,
-html.light .bg-emerald-600 span,
-html.light .bg-purple-600,
-html.light .bg-purple-600 span,
-html.light .bg-indigo-600,
-html.light .bg-indigo-600 span,
-html.light .bg-blue-600,
-html.light .bg-blue-600 span,
-html.light button[class*="bg-red"] span,
-html.light button[class*="bg-emerald"] span,
-html.light button[class*="bg-purple"] span {
+.github-button-primary {
+  background: #1f883d;
   color: #ffffff !important;
+  border: 1px solid rgba(31, 35, 40, 0.15);
+  box-shadow: 0 1px 0 rgba(31, 35, 40, 0.1);
 }
 
-/* Inputs and interactive elements in light mode */
-html.light input:not([type="checkbox"]):not([type="radio"]),
-html.light textarea,
-html.light select {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+.github-button-primary:hover {
+  background: #1a7f37;
+  border-color: rgba(31, 35, 40, 0.2);
 }
 
-html.light input::placeholder,
-html.light textarea::placeholder {
-  color: #94a3b8 !important;
+.github-button-danger {
+  background: var(--danger-emphasis);
+  color: #ffffff !important;
+  border: 1px solid rgba(31, 35, 40, 0.15);
 }
 
-/* Retro and cyber accents in light mode */
-html.light .retro-grid-lines {
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+.github-button-danger:hover {
+  background: #b62324;
 }
 
-html.light .cyber-bezel {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.8), inset -1px -1px 0px rgba(0, 0, 0, 0.06);
+.github-button-invisible {
+  background: transparent;
+  border-color: transparent;
+  color: var(--fg-default);
 }
 
-html.light .cyber-button {
-  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.15);
-}
+.github-button-invisible:hover {
+  background: var(--bg-muted);
+}
+
+.github-button-sm {
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.github-button-lg {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 16px;
+}
+
+/* 5.2 Inputs */
+.github-input {
+  height: 32px;
+  padding: 5px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--fg-default);
+  background: var(--bg-default);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  outline: none;
+  transition: 80ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.github-input:focus {
+  border-color: var(--accent-fg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-fg) 30%, transparent);
+}
+
+.github-input::placeholder {
+  color: var(--fg-muted);
+}
+
+/* 5.3 Cards */
+.github-card {
+  background: var(--bg-default);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+}
+
+.github-card-padding-sm {
+  padding: 12px;
+}
+
+.github-card-padding-md {
+  padding: 16px;
+}
+
+.github-card-padding-lg {
+  padding: 24px;
+}
+
+/* 5.4 Header */
+.github-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: var(--bg-default);
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* 5.5 Sidebars */
+.github-sidebar {
+  width: 256px;
+  background: var(--bg-muted);
+  border-right: 1px solid var(--border-default);
+}
+
+.github-sidebar-item {
+  min-height: 32px;
+  padding: 6px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  color: var(--fg-default);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.github-sidebar-item:hover {
+  background: var(--bg-subtle);
+}
+
+.github-sidebar-item.active {
+  background: var(--bg-emphasis);
+  color: var(--fg-default);
+  font-weight: 600;
+}
+
+/* 5.6 Navigation Tabs */
+.github-tab {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  transition: color 0.12s ease;
+}
+
+.github-tab:hover {
+  color: var(--fg-default);
+}
+
+.github-tab.active {
+  color: var(--fg-default);
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent-fg);
+}
+
+/* 5.7 Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  border-radius: 2em;
+  background: var(--bg-muted);
+  color: var(--fg-default);
+  border: 1px solid var(--border-default);
+  white-space: nowrap;
+}
+
+.badge-success {
+  color: var(--success-fg);
+  background: var(--success-muted);
+  border-color: transparent;
+}
+
+.badge-danger {
+  color: var(--danger-fg);
+  background: var(--danger-muted);
+  border-color: transparent;
+}
+
+.badge-purple {
+  color: var(--done-fg);
+  background: var(--done-muted);
+  border-color: transparent;
+}
+
+.badge-attention {
+  color: var(--attention-fg);
+  background: var(--attention-muted);
+  border-color: transparent;
+}
+
+.badge-sponsors {
+  color: var(--sponsors-fg);
+  background: var(--sponsors-muted);
+  border-color: transparent;
+}
+
+/* 5.8 Avatar */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatar-tiny { width: 16px; height: 16px; }
+.avatar-small { width: 20px; height: 20px; }
+.avatar-normal { width: 32px; height: 32px; }
+.avatar-large { width: 40px; height: 40px; }
+.avatar-profile { width: 64px; height: 64px; }
+
+/* 5.9 Dropdown / Menu */
+.github-menu {
+  min-width: 180px;
+  padding: 4px;
+  background: var(--bg-default);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+}
+
+[data-theme="dark"] .github-menu,
+html.dark .github-menu {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.github-menu-item {
+  padding: 6px 8px;
+  font-size: 14px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-default);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+}
+
+.github-menu-item:hover {
+  background: var(--bg-muted);
+}
+
+/* 5.10 Tables */
+.github-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+.github-table th {
+  padding: 8px 16px;
+  font-weight: 600;
+  text-align: left;
+  background: var(--bg-muted);
+  border-bottom: 1px solid var(--border-default);
+  color: var(--fg-default);
+}
+
+.github-table td {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-muted);
+  color: var(--fg-default);
+}
+
+/* 5.11 Code blocks */
+.github-code {
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  overflow-x: auto;
+  color: var(--fg-default);
+}
+
+/* 5.12 Alerts */
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.alert-info {
+  color: var(--accent-fg);
+  background: var(--accent-muted);
+  border: 1px solid var(--accent-fg);
+}
+
+.alert-success {
+  color: var(--success-fg);
+  background: var(--success-muted);
+  border: 1px solid var(--success-fg);
+}
+
+.alert-warning {
+  color: var(--attention-fg);
+  background: var(--attention-muted);
+  border: 1px solid var(--attention-fg);
+}
+
+.alert-danger {
+  color: var(--danger-fg);
+  background: var(--danger-muted);
+  border: 1px solid var(--danger-fg);
+}
+
+/* 5.13 Modal / Dialog */
+.github-dialog {
+  width: min(544px, calc(100vw - 32px));
+  background: var(--bg-default);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+  color: var(--fg-default);
+}
+
+.github-dialog-header {
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.github-dialog-body {
+  padding: 16px;
+  font-size: 14px;
+}
+
+.github-dialog-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 5.14 Tooltip */
+.github-tooltip {
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 18px;
+  color: #ffffff;
+  background: #25292e;
+  border-radius: 6px;
+}
+
+/* =====================================================
+   6. SEAMLESS OVERRIDES FOR LEGACY TAILWIND HARDCODED UTILITIES
+===================================================== */
+
+/* Map legacy dark surfaces to GitHub Primer semantic tokens */
+.bg-\[\#08090d\],
+.bg-\[\#090d16\],
+.bg-\[\#07080d\],
+.bg-\[\#07090e\],
+.bg-\[\#080a0f\],
+.bg-\[\#08090f\],
+.bg-\[\#090b10\],
+.bg-\[\#090b12\],
+.bg-\[\#0a0c13\],
+.bg-\[\#0a0d14\],
+.bg-\[\#0b0e15\],
+.bg-\[\#0b0e16\],
+.bg-\[\#0b0e17\],
+.bg-\[\#0c0e16\],
+.bg-\[\#0c0f18\],
+.bg-\[\#0c101a\],
+.bg-\[\#0d1322\],
+.bg-\[\#0e121d\],
+.bg-\[\#0e121e\],
+.bg-\[\#0f131d\],
+.bg-\[\#0f131f\],
+.bg-\[\#10141f\],
+.bg-\[\#101b1f\],
+.bg-\[\#101b22\],
+.bg-\[\#110e14\],
+.bg-\[\#111622\],
+.bg-\[\#111928\],
+.bg-\[\#121622\],
+.bg-\[\#121620\],
+.bg-\[\#131926\],
+.bg-\[\#141923\],
+.bg-\[\#161208\],
+.bg-\[\#161b26\],
+.bg-\[\#180a0f\],
+.bg-\[\#1a1f2e\],
+.bg-\[\#1e2330\],
+.bg-black {
+  background-color: var(--bg-default) !important;
+}
+
+/* Column and secondary panels map to var(--bg-muted) */
+.bg-\[\#080a0f\],
+.bg-\[\#07090e\],
+.bg-\[\#08090f\],
+.bg-\[\#0c0f18\],
+.bg-slate-900,
+.bg-slate-900\/90,
+.bg-slate-900\/80,
+.bg-slate-900\/60,
+.bg-slate-900\/50,
+.bg-slate-900\/40,
+.bg-slate-950 {
+  background-color: var(--bg-muted) !important;
+}
+
+.bg-slate-800,
+.bg-slate-800\/90,
+.bg-slate-800\/60,
+.bg-slate-800\/50,
+.bg-slate-800\/40 {
+  background-color: var(--bg-subtle) !important;
+}
+
+.hover\:bg-slate-900:hover,
+.hover\:bg-slate-900\/60:hover,
+.hover\:bg-slate-800:hover,
+.hover\:bg-slate-800\/60:hover {
+  background-color: var(--bg-subtle) !important;
+}
+
+/* Border overrides */
+.border-white\/5,
+.border-white\/10,
+.border-white\/15,
+.border-white\/20,
+.border-slate-800,
+.border-slate-800\/60,
+.border-slate-700,
+.border-slate-700\/60,
+.border-slate-700\/80 {
+  border-color: var(--border-default) !important;
+}
+
+/* Text overrides */
+.text-white,
+.text-slate-100 {
+  color: var(--fg-default) !important;
+}
+
+.text-slate-200,
+.text-slate-300 {
+  color: var(--fg-default) !important;
+}
+
+.text-slate-400,
+.text-slate-500 {
+  color: var(--fg-muted) !important;
+}
+
+/* Radii overrides: apply restrained 6px radius */
+.rounded-xl,
+.rounded-2xl {
+  border-radius: var(--radius-md) !important;
+}
+
+.rounded-lg {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Preserve avatar and pill rounding */
+.rounded-full {
+  border-radius: var(--radius-full) !important;
+}
+
+/* Form controls */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  background-color: var(--bg-default) !important;
+  color: var(--fg-default) !important;
+  border-color: var(--border-default) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--fg-muted) !important;
+}

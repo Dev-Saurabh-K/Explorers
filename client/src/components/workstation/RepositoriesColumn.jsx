@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Plus, Search, FolderGit2, Lock, Globe, ChevronLeft, ChevronRight, Disc3, RefreshCw } from "lucide-react";
+import {
+  RepoIcon,
+  LockIcon,
+  GlobeIcon,
+  SyncIcon,
+  PlusIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SearchIcon
+} from "@primer/octicons-react";
 
 export function RepositoriesColumn({
   repositories = [],
@@ -20,35 +29,41 @@ export function RepositoriesColumn({
 
   if (collapsed) {
     return (
-      <div className="w-12 shrink-0 flex flex-col items-center py-3 border-r border-[#00ff66]/20 bg-[#090b10] select-none h-full min-h-0 justify-between">
-        <div className="flex flex-col items-center gap-3">
+      <div
+        className="w-12 shrink-0 flex flex-col items-center py-2 select-none h-full min-h-0 justify-between"
+        style={{ backgroundColor: "var(--bg-muted)", borderRight: "1px solid var(--border-default)" }}
+      >
+        <div className="flex flex-col items-center gap-2">
           <button
             onClick={onToggleCollapse}
-            title="Expand Repositories Deck"
-            className="p-1.5 rounded-lg border border-[#00ff66]/40 text-[#00ff66] hover:bg-[#00ff66] hover:text-black transition"
+            title="Expand Repositories"
+            className="github-button"
+            style={{ width: "28px", height: "28px", padding: 0 }}
           >
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRightIcon size={14} />
           </button>
-          <div className="text-[10px] font-mono text-[#ffb000] rotate-90 my-8 whitespace-nowrap tracking-wider font-bold">
-            TAPES ({repositories.length})
+          <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--fg-muted)" }}>
+            {repositories.length}
           </div>
         </div>
 
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 pb-2">
           <button
             onClick={onSyncRepo}
             disabled={isSyncing}
-            title="Force refresh live repository data & commits from GitHub"
-            className="p-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-[#00ff66] hover:border-[#00ff66] transition"
+            title="Refresh repository commits"
+            className="github-button"
+            style={{ width: "28px", height: "28px", padding: 0 }}
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-[#00ff66]" : ""}`} />
+            <SyncIcon size={14} className={isSyncing ? "animate-spin text-blue-500" : ""} />
           </button>
           <button
             onClick={onAddRepo}
-            title="Mount New Repo"
-            className="p-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-[#00ff66] hover:border-[#00ff66] transition"
+            title="Add repository"
+            className="github-button"
+            style={{ width: "28px", height: "28px", padding: 0 }}
           >
-            <Plus className="h-3.5 w-3.5" />
+            <PlusIcon size={14} />
           </button>
         </div>
       </div>
@@ -56,15 +71,25 @@ export function RepositoriesColumn({
   }
 
   return (
-    <div className="w-56 lg:w-60 shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#090b10] select-none h-full min-h-0 overflow-hidden font-mono">
-      {/* Header with Title and Controls */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0c0e16] shrink-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Disc3 className="h-3.5 w-3.5 text-[#ffb000] shrink-0 animate-spin" style={{ animationDuration: "12s" }} />
-          <span className="text-[11px] font-bold text-white tracking-wider truncate uppercase">
-            Tape Archive
+    <aside
+      className="w-56 lg:w-64 shrink-0 flex flex-col select-none h-full min-h-0 overflow-hidden"
+      style={{ backgroundColor: "var(--bg-muted)", borderRight: "1px solid var(--border-default)" }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-3 shrink-0"
+        style={{
+          height: "44px",
+          backgroundColor: "var(--bg-default)",
+          borderBottom: "1px solid var(--border-default)"
+        }}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <RepoIcon size={16} />
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--fg-default)" }} className="truncate">
+            Repositories
           </span>
-          <span className="text-[10px] px-1 py-0.2 rounded bg-black text-[#ffb000] border border-[#ffb000]/40 font-bold shrink-0">
+          <span className="badge" style={{ fontSize: "11px", padding: "1px 5px" }}>
             {repositories.length}
           </span>
         </div>
@@ -73,44 +98,63 @@ export function RepositoriesColumn({
           <button
             onClick={onSyncRepo}
             disabled={isSyncing}
-            title="Force refresh live repository data & commits from GitHub"
-            className={`p-1 rounded text-slate-400 hover:text-[#00ff66] hover:bg-slate-800 transition ${isSyncing ? "text-[#00ff66]" : ""}`}
+            title="Refresh repository commits"
+            className="github-button"
+            style={{ width: "28px", height: "28px", padding: 0 }}
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+            <SyncIcon size={14} className={isSyncing ? "animate-spin" : ""} />
           </button>
           <button
             onClick={onAddRepo}
             title="Mount new repository"
-            className="p-1 rounded text-slate-400 hover:text-[#ffb000] hover:bg-slate-800 transition"
+            className="github-button"
+            style={{ width: "28px", height: "28px", padding: 0 }}
           >
-            <Plus className="h-3.5 w-3.5" />
+            <PlusIcon size={14} />
           </button>
           <button
             onClick={onToggleCollapse}
-            title="Collapse Repositories Column"
-            className="p-1 rounded text-slate-500 hover:text-white transition"
+            title="Collapse column"
+            className="github-button"
+            style={{ width: "28px", height: "28px", padding: 0 }}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />
+            <ChevronLeftIcon size={14} />
           </button>
         </div>
       </div>
 
-      {/* Search Input */}
-      <div className="p-2 border-b border-[#00ff66]/15 bg-[#0a0d14] shrink-0">
+      {/* Filter Input */}
+      <div
+        className="p-2 shrink-0"
+        style={{ borderBottom: "1px solid var(--border-muted)", backgroundColor: "var(--bg-default)" }}
+      >
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-500 pointer-events-none" />
+          <span
+            style={{
+              position: "absolute",
+              left: "8px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--fg-muted)",
+              pointerEvents: "none",
+              display: "flex"
+            }}
+          >
+            <SearchIcon size={12} />
+          </span>
           <input
             type="text"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search tapes..."
-            className="w-full bg-black border border-slate-800 rounded pl-7 pr-2 py-1 text-[11px] text-[#00ff66] placeholder-slate-600 focus:outline-none focus:border-[#00ff66] transition-all font-mono"
+            placeholder="Find a repository..."
+            className="github-input w-full"
+            style={{ height: "28px", paddingLeft: "26px", fontSize: "12px", borderRadius: "6px" }}
           />
         </div>
       </div>
 
-      {/* Repositories Tape List */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-1.5 space-y-1">
+      {/* Repositories List */}
+      <div className="flex-1 overflow-y-auto min-h-0 p-2 space-y-1">
         {filtered.map((repo) => {
           const repoId = typeof repo === "string" ? repo : repo.id || repo.name;
           const repoName = typeof repo === "string" ? repo : repo.name;
@@ -121,45 +165,55 @@ export function RepositoriesColumn({
             <button
               key={repoId}
               onClick={() => onSelectRepo(repoId)}
-              title={repoName}
-              className={`w-full p-2 rounded text-left transition-all relative border text-[11px] ${
-                isSelected
-                  ? "bg-[#101b1f] border-[#00e5ff] text-[#00e5ff] font-bold shadow-[inset_0_0_8px_rgba(0,229,255,0.2)]"
-                  : "bg-[#0b0e15] border-slate-900 text-slate-300 hover:border-slate-700 hover:text-white hover:bg-slate-900/40"
-              }`}
+              className="github-sidebar-item w-full"
+              style={{
+                backgroundColor: isSelected ? "var(--bg-default)" : "transparent",
+                border: isSelected ? "1px solid var(--border-default)" : "1px solid transparent",
+                boxShadow: isSelected ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
+                padding: "8px 10px",
+                borderRadius: "6px"
+              }}
             >
-              <div className="flex items-center justify-between gap-1">
-                <div className="flex items-center gap-1.5 truncate">
-                  <span className={isSelected ? "text-[#ffb000]" : "text-slate-500"}>
-                    {isSelected ? "►" : "▪"}
+              <div className="flex items-center justify-between gap-2 w-full">
+                <div className="flex items-center gap-2 truncate">
+                  <span style={{ color: isSelected ? "var(--accent-fg)" : "var(--fg-muted)" }}>
+                    <RepoIcon size={14} />
                   </span>
-                  <span className="truncate font-semibold">{repoName}</span>
+                  <span
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: isSelected ? 600 : 500,
+                      color: isSelected ? "var(--accent-fg)" : "var(--fg-default)"
+                    }}
+                    className="truncate font-mono"
+                  >
+                    {repoName}
+                  </span>
                 </div>
-                {visibility === "Private" ? (
-                  <Lock className="h-2.5 w-2.5 text-amber-500/70 shrink-0" />
-                ) : (
-                  <Globe className="h-2.5 w-2.5 text-slate-500 shrink-0" />
-                )}
-              </div>
 
-              <div className="flex items-center justify-between mt-1 text-[9px] text-slate-500">
-                <span className={visibility === "Private" ? "text-[#ffb000]" : "text-slate-400"}>
-                  [{visibility.toUpperCase()}]
-                </span>
-                {isSelected && (
-                  <span className="text-[#00ff66] font-bold">[MOUNTED]</span>
-                )}
+                <div className="flex items-center gap-1 shrink-0">
+                  {visibility === "Private" ? (
+                    <LockIcon size={12} fill="var(--attention-fg)" />
+                  ) : (
+                    <GlobeIcon size={12} fill="var(--fg-muted)" />
+                  )}
+                  {isSelected && (
+                    <span className="badge badge-success" style={{ fontSize: "10px", padding: "0 4px" }}>
+                      Active
+                    </span>
+                  )}
+                </div>
               </div>
             </button>
           );
         })}
 
         {filtered.length === 0 && (
-          <div className="p-4 text-center text-[10px] text-slate-600">
-            [NO MATCHING TAPES]
+          <div style={{ padding: "16px", textAlign: "center", fontSize: "13px", color: "var(--fg-muted)" }}>
+            No repositories found
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

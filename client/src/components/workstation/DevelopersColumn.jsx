@@ -1,5 +1,10 @@
 import React from "react";
-import { Users, ShieldAlert, CheckCircle2, ChevronLeft, ChevronRight, UserCheck, Award } from "lucide-react";
+import {
+  PeopleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  TrophyIcon
+} from "@primer/octicons-react";
 
 export function DevelopersColumn({
   developers = [],
@@ -8,7 +13,7 @@ export function DevelopersColumn({
   searchQuery = "",
   collapsed = false,
   onToggleCollapse = () => {},
-  width = 210,
+  width = 220,
   onOpenTeamPage = () => {}
 }) {
   const filteredDevs = developers.filter((dev) => {
@@ -20,58 +25,51 @@ export function DevelopersColumn({
 
   if (collapsed) {
     return (
-      <div className="w-14 shrink-0 flex flex-col items-center py-2.5 border-r border-[#00ff66]/20 bg-[#080a0f] select-none h-full min-h-0 font-mono overflow-hidden">
-        {/* Toggle Expand Header */}
-        <div className="flex flex-col items-center gap-1.5 pb-2 border-b border-[#00ff66]/20 w-full px-2 shrink-0">
+      <div
+        className="w-12 shrink-0 flex flex-col items-center py-2 select-none h-full min-h-0 overflow-hidden"
+        style={{ backgroundColor: "var(--bg-muted)", borderRight: "1px solid var(--border-default)" }}
+      >
+        <div className="flex flex-col items-center gap-2 pb-2 w-full px-1 shrink-0" style={{ borderBottom: "1px solid var(--border-default)" }}>
           <button
             onClick={onToggleCollapse}
-            title="Expand Authors Deck"
-            className="p-1.5 rounded-lg border border-[#00ff66]/40 text-[#00ff66] hover:bg-[#00ff66] hover:text-black transition cursor-pointer"
+            title="Expand Authors"
+            className="github-button"
+            style={{ width: "28px", height: "28px", padding: 0 }}
           >
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRightIcon size={14} />
           </button>
-          <div className="flex items-center gap-1 text-[9px] text-[#ffb000] font-bold" title={`${developers.length} Authors`}>
-            <Users className="h-3 w-3 text-[#00ff66]" />
+          <div className="flex items-center gap-1" style={{ fontSize: "11px", fontWeight: 600, color: "var(--fg-muted)" }}>
             <span>{developers.length}</span>
           </div>
         </div>
 
-        {/* Scrollable Contributor Avatar Images */}
-        <div className="flex-1 overflow-y-auto min-h-0 py-2 px-1.5 space-y-2 w-full flex flex-col items-center">
+        <div className="flex-1 overflow-y-auto min-h-0 py-2 px-1 space-y-1.5 w-full flex flex-col items-center">
           {filteredDevs.map((dev, idx) => {
             const id = dev.id || dev.developer || `dev-${idx}`;
             const name = dev.name || dev.developer;
             const isSelected = selectedDeveloperId === id || selectedDeveloperId === name;
-            const isDominant = dev.isDominant || dev.is_dominant || idx === 0;
             const percentage = dev.knowledge_percentage ?? dev.commit_percentage ?? (dev.percentage || 50);
-            const avatar = dev.avatar || dev.avatar_url || `https://ui-avatars.com/api/?name=${name}&background=0c0f18&color=00ff66`;
+            const avatar = dev.avatar || dev.avatar_url || `https://ui-avatars.com/api/?name=${name}&background=161b22&color=f0f6fc`;
 
             return (
               <button
                 key={id}
                 onClick={() => onSelectDeveloper(id)}
-                title={`@${name} • ${Math.round(percentage)}% (${dev.commit_count || dev.commitsCount || 0} commits)`}
-                className={`relative group flex items-center justify-center p-1 rounded-xl transition-all cursor-pointer ${
-                  isSelected
-                    ? "bg-[#101b22] ring-2 ring-[#00ff66] shadow-[0_0_12px_rgba(0,255,102,0.4)]"
-                    : "hover:bg-slate-900 ring-1 ring-slate-800 hover:ring-[#00ff66]/60"
-                }`}
+                title={`@${name} • ${Math.round(percentage)}%`}
+                style={{
+                  padding: "2px",
+                  borderRadius: "50%",
+                  border: isSelected ? "2px solid var(--accent-fg)" : "1px solid var(--border-default)",
+                  background: isSelected ? "var(--accent-muted)" : "transparent",
+                  cursor: "pointer"
+                }}
               >
                 <img
                   src={avatar}
                   alt={name}
-                  className="w-7 h-7 rounded-lg object-cover"
+                  className="avatar avatar-small"
+                  style={{ width: "24px", height: "24px", borderRadius: "50%" }}
                 />
-                {isDominant && (
-                  <span
-                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#ffb000] ring-1 ring-black"
-                    title="Lead Maintainer"
-                  />
-                )}
-                {/* Hover Tooltip */}
-                <span className="pointer-events-none absolute left-full ml-2 z-50 hidden group-hover:flex items-center px-2 py-1 rounded bg-[#0c101a] border border-[#00ff66]/40 text-[10px] text-white whitespace-nowrap font-mono shadow-2xl">
-                  @{name} ({Math.round(percentage)}%)
-                </span>
               </button>
             );
           })}
@@ -81,18 +79,29 @@ export function DevelopersColumn({
   }
 
   return (
-    <div
-      style={{ width: `${width}px` }}
-      className="shrink-0 flex flex-col border-r border-[#00ff66]/20 bg-[#080a0f] select-none h-full min-h-0 overflow-hidden font-mono"
+    <aside
+      style={{
+        width: `${width}px`,
+        backgroundColor: "var(--bg-muted)",
+        borderRight: "1px solid var(--border-default)"
+      }}
+      className="shrink-0 flex flex-col select-none h-full min-h-0 overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[#00ff66]/20 bg-[#0b0e17] shrink-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Users className="h-3.5 w-3.5 text-[#00ff66] shrink-0" />
-          <span className="text-[11px] font-bold text-white tracking-wider truncate uppercase">
+      <div
+        className="flex items-center justify-between px-3 shrink-0"
+        style={{
+          height: "44px",
+          backgroundColor: "var(--bg-default)",
+          borderBottom: "1px solid var(--border-default)"
+        }}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <PeopleIcon size={16} />
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--fg-default)" }} className="truncate">
             Authors
           </span>
-          <span className="text-[10px] px-1 py-0.2 rounded bg-black text-[#00ff66] border border-[#00ff66]/40 font-bold shrink-0">
+          <span className="badge" style={{ fontSize: "11px", padding: "1px 5px" }}>
             {developers.length}
           </span>
         </div>
@@ -101,71 +110,87 @@ export function DevelopersColumn({
           {onOpenTeamPage && (
             <button
               onClick={onOpenTeamPage}
-              title="Team Roster & Succession Engine"
-              className="p-1 rounded text-[#ffb000] hover:text-[#00ff66] hover:bg-white/5 transition"
+              title="Team Roster & Succession"
+              className="github-button"
+              style={{ width: "28px", height: "28px", padding: 0 }}
             >
-              <Award className="h-3.5 w-3.5" />
+              <TrophyIcon size={14} />
             </button>
           )}
 
           <button
             onClick={onToggleCollapse}
-            title="Collapse Authors Column"
-            className="p-1 rounded text-slate-500 hover:text-white transition"
+            title="Collapse Authors"
+            className="github-button"
+            style={{ width: "28px", height: "28px", padding: 0 }}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />
+            <ChevronLeftIcon size={14} />
           </button>
         </div>
       </div>
 
       {/* Developer List */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-1.5 space-y-1">
+      <div className="flex-1 overflow-y-auto min-h-0 p-2 space-y-1">
         {filteredDevs.map((dev, idx) => {
           const id = dev.id || dev.developer || `dev-${idx}`;
           const name = dev.name || dev.developer;
           const isSelected = selectedDeveloperId === id || selectedDeveloperId === name;
           const isDominant = dev.isDominant || dev.is_dominant || idx === 0;
           const percentage = dev.knowledge_percentage ?? dev.commit_percentage ?? (dev.percentage || 50);
-          const avatar = dev.avatar || dev.avatar_url || `https://ui-avatars.com/api/?name=${name}&background=0c0f18&color=00ff66`;
+          const avatar = dev.avatar || dev.avatar_url || `https://ui-avatars.com/api/?name=${name}&background=161b22&color=f0f6fc`;
 
           return (
             <button
               key={id}
               onClick={() => onSelectDeveloper(id)}
-              className={`w-full flex items-center gap-2 p-2 rounded text-left transition-all relative border text-[11px] ${
-                isSelected
-                  ? "bg-[#101b22] border-[#00ff66] text-[#00ff66] font-bold shadow-[inset_0_0_8px_rgba(0,255,102,0.2)]"
-                  : "bg-[#0a0c13] border-slate-900 text-slate-300 hover:border-slate-700 hover:text-white hover:bg-slate-900/40"
-              }`}
+              className="github-sidebar-item w-full"
+              style={{
+                backgroundColor: isSelected ? "var(--bg-default)" : "transparent",
+                border: isSelected ? "1px solid var(--border-default)" : "1px solid transparent",
+                boxShadow: isSelected ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
+                padding: "8px",
+                borderRadius: "6px"
+              }}
             >
               {/* Avatar */}
-              <div className="relative shrink-0">
+              <div className="relative shrink-0 flex items-center">
                 <img
                   src={avatar}
                   alt={name}
-                  className={`w-6 h-6 rounded object-cover ring-1 ${
-                    isSelected ? "ring-[#00ff66]" : "ring-slate-800"
-                  }`}
+                  className="avatar avatar-small"
+                  style={{ width: "24px", height: "24px", borderRadius: "50%" }}
                 />
-                {isDominant && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#ffb000] ring-1 ring-black" title="Lead Maintainer" />
-                )}
               </div>
 
-              {/* Dev Name & Risk */}
-              <div className="flex-1 min-w-0">
+              {/* Dev Name & Metadata */}
+              <div className="flex-1 min-w-0 text-left">
                 <div className="flex items-center justify-between gap-1">
-                  <span className={`text-[11px] font-bold truncate ${isSelected ? "text-white" : "text-slate-200"}`}>
+                  <span
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: isSelected ? 600 : 500,
+                      color: isSelected ? "var(--accent-fg)" : "var(--fg-default)"
+                    }}
+                    className="truncate"
+                  >
                     @{name}
                   </span>
-                  <span className="text-[9px] font-bold text-[#ffb000] shrink-0">
+                  <span
+                    className="badge"
+                    style={{
+                      fontSize: "11px",
+                      padding: "0 4px",
+                      fontFamily: "var(--font-mono)",
+                      color: isDominant ? "var(--attention-fg)" : "var(--fg-muted)"
+                    }}
+                  >
                     {Math.round(percentage)}%
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-[9px] text-slate-500 mt-0.5">
+                <div style={{ fontSize: "12px", color: "var(--fg-muted)", marginTop: "2px" }} className="flex items-center justify-between">
                   <span className="truncate">{dev.role || `${dev.commit_count || dev.commitsCount || 0} commits`}</span>
                   {isDominant && (
-                    <span className="text-[8px] uppercase text-[#ffb000] font-bold">[LEAD]</span>
+                    <span className="badge badge-attention" style={{ fontSize: "10px", padding: "0 4px" }}>LEAD</span>
                   )}
                 </div>
               </div>
@@ -174,11 +199,11 @@ export function DevelopersColumn({
         })}
 
         {filteredDevs.length === 0 && (
-          <div className="p-3 text-center text-[10px] text-slate-600">
-            [NO AUTHORS MATCHED]
+          <div style={{ padding: "16px", textAlign: "center", fontSize: "13px", color: "var(--fg-muted)" }}>
+            No authors found
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

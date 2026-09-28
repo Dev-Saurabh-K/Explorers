@@ -300,21 +300,23 @@ export default function App() {
   };
 
   return (
-    <div className={`h-screen w-screen overflow-hidden flex flex-col font-sans transition-colors duration-200 ${
-      theme === "light"
-        ? "bg-slate-50 text-slate-900 selection:bg-yellow-400/40 selection:text-slate-900"
-        : "bg-[#08090d] text-slate-100 selection:bg-yellow-400/30 selection:text-yellow-200"
-    }`}>
+    <div
+      className="h-screen w-screen overflow-hidden flex flex-col"
+      style={{ backgroundColor: "var(--bg-default)", color: "var(--fg-default)", fontFamily: "var(--font-sans)" }}
+    >
       
-      {/* Toast Notification with Cyber Yellow Glow */}
+      {/* Toast Notification (GitHub Alert style) */}
       {toastMessage && (
-        <div className={`fixed bottom-6 right-6 z-50 text-xs px-4 py-3 rounded-xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom duration-300 flex items-center gap-2.5 ${
-          theme === "light"
-            ? "bg-white/95 border border-yellow-500/40 text-slate-800 shadow-yellow-500/10"
-            : "bg-[#0f131f]/95 border border-yellow-400/40 text-yellow-300 glow-yellow-sm"
-        }`}>
-          <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />
-          <span className="font-semibold">{toastMessage}</span>
+        <div
+          className="alert alert-info fixed bottom-6 right-6 z-50 shadow-lg"
+          style={{
+            borderRadius: "6px",
+            fontSize: "13px",
+            fontWeight: 500,
+            maxWidth: "380px"
+          }}
+        >
+          <span>{toastMessage}</span>
         </div>
       )}
 
