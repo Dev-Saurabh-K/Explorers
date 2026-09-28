@@ -57,7 +57,7 @@ export function DonutChart({
             cy={center}
             r={radius + strokeWidth / 2 + 1}
             fill="none"
-            stroke="rgba(0, 229, 255, 0.12)"
+            stroke="var(--chart-ring)"
             strokeWidth={1}
             strokeDasharray="4 4"
           />
@@ -67,8 +67,8 @@ export function DonutChart({
             cx={center}
             cy={center}
             r={radius}
-            fill="#090b11"
-            stroke="#161b28"
+            fill="var(--chart-core)"
+            stroke="var(--chart-track)"
             strokeWidth={strokeWidth}
           />
 
@@ -105,8 +105,8 @@ export function DonutChart({
             cx={center}
             cy={center}
             r={radius - strokeWidth / 2 - 2}
-            fill="#0b0e17"
-            stroke="rgba(255, 255, 255, 0.08)"
+            fill="var(--chart-core)"
+            stroke="var(--border-default)"
             strokeWidth={1}
           />
         </svg>
@@ -133,7 +133,10 @@ export function DonutChart({
               <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 block">
                 {centerSubtitle || totalLabel}
               </span>
-              <span className="text-3xl font-black text-white font-mono tracking-tight block">
+              <span
+                className="text-3xl font-black font-mono tracking-tight block"
+                style={{ color: "var(--fg-default)" }}
+              >
                 {centerTitle !== "" ? centerTitle : total}
               </span>
               {centerTag && (
