@@ -310,6 +310,15 @@ html.light {
   opacity: 0.7;
 }
 
+.github-button:focus-visible,
+.github-input:focus-visible,
+.github-tab:focus-visible,
+.github-sidebar-item:focus-visible,
+.github-menu-item:focus-visible {
+  outline: 2px solid var(--accent-fg);
+  outline-offset: 2px;
+}
+
 .github-button-primary {
   background: #1f883d;
   color: #ffffff !important;
@@ -433,7 +442,9 @@ html.light {
 }
 
 .github-sidebar-item.active {
-  background: var(--bg-emphasis);
+  /* The emphasis surface is dark in both themes, which makes dark text
+     unreadable in light mode. Accent-muted remains legible everywhere. */
+  background: var(--accent-muted);
   color: var(--fg-default);
   font-weight: 600;
 }
