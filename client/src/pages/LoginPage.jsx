@@ -87,28 +87,6 @@ const ArrowIcon = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// Key Icon
-// ─────────────────────────────────────────────────────────────
-
-const KeyIcon = () => (
-  <svg
-    width="17"
-    height="17"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="7.5" cy="15.5" r="5.5" />
-    <path d="m21 2-9.6 9.6" />
-    <path d="m15.5 6.5 2 2" />
-    <path d="m18 4 2 2" />
-  </svg>
-);
-
-// ─────────────────────────────────────────────────────────────
 // Mountains
 // ─────────────────────────────────────────────────────────────
 
@@ -257,15 +235,6 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
             Your repositories. Your history. Organized.
           </p>
 
-          {/* Custom token */}
-          <button className="token-button">
-            <KeyIcon />
-
-            <span>
-              Sign in with Custom Token
-            </span>
-          </button>
-
         </div>
 
       </main>
@@ -275,18 +244,6 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
       ═══════════════════════════════════════════════════════ */}
 
       <footer className="bottom-bar">
-
-        <div className="mvp-section">
-
-          <span className="mvp-badge">
-            MVP DELIVERABLES
-          </span>
-
-          <span className="mvp-text">
-            Core capabilities built for automated repository intelligence
-          </span>
-
-        </div>
 
         <div className="version">
           v1.0.0 Ready
@@ -352,6 +309,10 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
             BlinkMacSystemFont,
             "Segoe UI",
             sans-serif;
+
+          transition:
+            background 0.35s ease,
+            color 0.35s ease;
         }
 
 
@@ -564,8 +525,6 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
         ===================================================== */
 
         .signin-button {
-          margin-left: auto;
-
           border: none;
 
           padding:
@@ -1189,7 +1148,7 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
 
         .trust-text {
           margin:
-            20px 0 33px;
+            20px 0 0;
 
           color:
             rgba(213, 215, 225, 0.64);
@@ -1203,61 +1162,6 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
           font-size: 15px;
 
           letter-spacing: 0.5px;
-        }
-
-
-        /* =====================================================
-           TOKEN BUTTON
-        ===================================================== */
-
-        .token-button {
-          display: flex;
-
-          align-items: center;
-
-          justify-content: center;
-
-          gap: 8px;
-
-          padding:
-            11px 22px;
-
-          border-radius: 12px;
-
-          border:
-            1px solid
-            rgba(113, 132, 183, 0.4);
-
-          background:
-            rgba(13, 17, 31, 0.55);
-
-          color:
-            rgba(222, 225, 238, 0.8);
-
-          font-size: 14px;
-
-          cursor: pointer;
-
-          box-shadow:
-            inset 0 1px 0
-            rgba(255, 255, 255, 0.04);
-
-          transition:
-            border-color 0.2s ease,
-            background 0.2s ease,
-            transform 0.2s ease;
-        }
-
-
-        .token-button:hover {
-          border-color:
-            rgba(168, 85, 247, 0.7);
-
-          background:
-            rgba(95, 45, 145, 0.15);
-
-          transform:
-            translateY(-1px);
         }
 
 
@@ -1285,52 +1189,11 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
 
           align-items: center;
 
-          justify-content: space-between;
+          justify-content: center;
 
           color:
             rgba(175, 180, 200, 0.68);
 
-          font-size: 13px;
-        }
-
-
-        .mvp-section {
-          display: flex;
-
-          align-items: center;
-
-          gap: 12px;
-        }
-
-
-        .mvp-badge {
-          padding:
-            6px 12px;
-
-          border-radius: 5px;
-
-          border:
-            1px solid
-            rgba(255, 190, 0, 0.4);
-
-          color:
-            #ffd000;
-
-          background:
-            rgba(255, 190, 0, 0.07);
-
-          font-family:
-            monospace;
-
-          font-weight: 800;
-
-          font-size: 11px;
-
-          letter-spacing: 0.8px;
-        }
-
-
-        .mvp-text {
           font-size: 13px;
         }
 
@@ -1360,19 +1223,6 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
           }
 
 
-          .window-controls {
-            width: 60px;
-
-            gap: 6px;
-          }
-
-
-          .window-controls span {
-            width: 11px;
-            height: 11px;
-          }
-
-
           .nav-brand-text {
             font-size: 17px;
           }
@@ -1383,6 +1233,12 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
               8px 16px;
 
             font-size: 13px;
+          }
+
+
+          .theme-toggle-btn {
+            width: 34px;
+            height: 34px;
           }
 
 
@@ -1444,16 +1300,6 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
           }
 
 
-          .mvp-text {
-            display: none;
-          }
-
-
-          .mvp-badge {
-            font-size: 9px;
-          }
-
-
           .version {
             font-size: 10px;
           }
@@ -1477,11 +1323,6 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
         ===================================================== */
 
         @media (max-width: 420px) {
-
-          .window-controls {
-            display: none;
-          }
-
 
           .nav-brand {
             margin-left: 0;
@@ -1511,11 +1352,6 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
           }
 
 
-          .token-button {
-            font-size: 12px;
-          }
-
-
           .hero-logo-wrapper .gitocx-logo {
             width: 88px;
             height: 88px;
@@ -1539,101 +1375,238 @@ export default function LoginPage({ theme = "dark", onToggleTheme = () => {} }) 
             animation: none !important;
           }
 
+        }
+
+
         /* =====================================================
            LIGHT MODE
         ===================================================== */
 
         .login-page.light-mode {
-          background: radial-gradient(
-            ellipse at 50% 5%,
-            #ffffff 0%,
-            #f1f5f9 45%,
-            #e2e8f0 100%
-          );
+          background:
+            radial-gradient(
+              ellipse at 50% 5%,
+              #ffffff 0%,
+              #f2f5fb 45%,
+              #e3e9f4 100%
+            );
+
           color: #0f172a;
         }
 
+
+        /* Sky glow */
+
         .login-page.light-mode .sky-glow {
-          background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.12) 0%, transparent 65%);
+          background:
+            radial-gradient(
+              ellipse at 12% 70%,
+              rgba(255, 0, 174, 0.10),
+              transparent 30%
+            ),
+            radial-gradient(
+              ellipse at 88% 67%,
+              rgba(255, 143, 32, 0.12),
+              transparent 30%
+            ),
+            radial-gradient(
+              ellipse at 50% 76%,
+              rgba(167, 45, 255, 0.10),
+              transparent 42%
+            );
         }
+
+
+        /* Stars are invisible in daylight */
 
         .login-page.light-mode .stars {
-          opacity: 0.2;
+          display: none;
         }
+
+
+        /* Mountains */
 
         .login-page.light-mode .mountain-back {
-          background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
-          opacity: 0.35;
+          opacity: 0.75;
+
+          background:
+            linear-gradient(
+              150deg,
+              transparent 18%,
+              #c2cee2 18.2%,
+              #d6e0ef 38%,
+              transparent 38.2%,
+              transparent 45%,
+              #c8d4e6 45.2%,
+              #dde5f2 68%,
+              transparent 68.2%
+            );
         }
 
-        .login-page.light-mode .mountain-left,
-        .login-page.light-mode .mountain-right {
-          background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
-          opacity: 0.25;
+
+        .login-page.light-mode .mountain-left {
+          background: #c6d2e4;
+
+          box-shadow:
+            0 -20px 60px rgba(120, 140, 200, 0.18);
         }
+
+
+        .login-page.light-mode .mountain-right {
+          background: #cbd7e8;
+
+          box-shadow:
+            0 -20px 70px rgba(150, 160, 210, 0.18);
+        }
+
 
         .login-page.light-mode .mountain-front {
-          background: linear-gradient(180deg, #64748b 0%, #475569 100%);
-          opacity: 0.2;
+          background: #dae2ee;
         }
+
+
+        /* Horizon */
+
+        .login-page.light-mode .horizon-glow {
+          background:
+            radial-gradient(
+              ellipse,
+              rgba(255, 159, 28, 0.20),
+              rgba(219, 44, 255, 0.12),
+              transparent 70%
+            );
+        }
+
+
+        .login-page.light-mode .horizon-line {
+          background:
+            linear-gradient(
+              90deg,
+              transparent,
+              #a855f7 18%,
+              #f59e0b 48%,
+              #ec4899 70%,
+              transparent
+            );
+
+          box-shadow:
+            0 0 18px rgba(168, 85, 247, 0.35);
+        }
+
+
+        /* Retro floor */
+
+        .login-page.light-mode .floor-grid {
+          background-image:
+            linear-gradient(
+              rgba(139, 92, 246, 0.30) 1px,
+              transparent 1px
+            ),
+            linear-gradient(
+              90deg,
+              rgba(236, 72, 153, 0.22) 1px,
+              transparent 1px
+            );
+
+          mask-image:
+            linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0.8),
+              transparent 80%
+            );
+
+          -webkit-mask-image:
+            linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0.8),
+              transparent 80%
+            );
+        }
+
+
+        /* Navbar */
 
         .login-page.light-mode .topbar {
           background: rgba(255, 255, 255, 0.88);
-          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+          border-bottom:
+            1px solid rgba(15, 23, 42, 0.08);
         }
 
+
         .login-page.light-mode .theme-toggle-btn {
-          background: rgba(0, 0, 0, 0.05);
-          border-color: rgba(0, 0, 0, 0.12);
+          background: rgba(15, 23, 42, 0.05);
+
+          border-color: rgba(15, 23, 42, 0.12);
+
           color: #0f172a;
         }
 
+
         .login-page.light-mode .theme-toggle-btn:hover {
-          background: rgba(0, 0, 0, 0.1);
-          border-color: rgba(0, 0, 0, 0.2);
+          background: rgba(15, 23, 42, 0.10);
+
+          border-color: rgba(15, 23, 42, 0.20);
         }
+
 
         .login-page.light-mode .nav-brand-text {
           color: #0f172a;
         }
 
+
+        .login-page.light-mode .nav-logo {
+          background: #ffffff;
+
+          border-color: rgba(168, 85, 247, 0.28);
+
+          box-shadow:
+            0 0 18px rgba(168, 85, 247, 0.14);
+        }
+
+
+        /* Hero text */
+
         .login-page.light-mode .hero-title {
           color: #0f172a;
+
           text-shadow: none;
         }
+
 
         .login-page.light-mode .hero-tagline {
           color: #1e293b;
         }
 
+
         .login-page.light-mode .hero-description {
           color: #475569;
         }
+
 
         .login-page.light-mode .trust-text {
           color: #64748b;
         }
 
-        .login-page.light-mode .token-button {
-          background: rgba(0, 0, 0, 0.04);
-          border-color: rgba(0, 0, 0, 0.12);
-          color: #334155;
+
+        /* Logo glow softened */
+
+        .login-page.light-mode .gitocx-logo {
+          box-shadow:
+            0 10px 30px rgba(100, 116, 139, 0.22),
+            0 0 40px rgba(168, 85, 247, 0.14);
         }
 
-        .login-page.light-mode .token-button:hover {
-          background: rgba(0, 0, 0, 0.08);
-          color: #0f172a;
-        }
+
+        /* Bottom bar */
 
         .login-page.light-mode .bottom-bar {
-          background: rgba(255, 255, 255, 0.88);
-          border-top: 1px solid rgba(0, 0, 0, 0.08);
+          border-top:
+            1px solid rgba(15, 23, 42, 0.10);
+
           color: #64748b;
         }
 
-        .login-page.light-mode .mvp-text {
-          color: #475569;
-        }
 
         .login-page.light-mode .version {
           color: #64748b;
