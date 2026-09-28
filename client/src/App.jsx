@@ -38,9 +38,9 @@ export default function App() {
 
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("gitocx_theme") || "dark";
+      return localStorage.getItem("gitocx_theme") || "light";
     }
-    return "dark";
+    return "light";
   });
 
   useEffect(() => {
