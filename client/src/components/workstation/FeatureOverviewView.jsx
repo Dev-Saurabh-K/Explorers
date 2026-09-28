@@ -198,7 +198,7 @@ export function FeatureOverviewView({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
           {/* Feature Identity */}
-          <div className="flex flex-1 items-start gap-3 min-w-0">
+          <div className="flex items-start gap-3 min-w-0">
             <div
               className="p-2 shrink-0 mt-0.5"
               style={{
@@ -210,7 +210,7 @@ export function FeatureOverviewView({
             >
               {getIcon()}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 style={{ fontSize: "16px", fontWeight: 600, color: "var(--fg-default)" }} className="truncate">
                   {fname}
@@ -226,10 +226,9 @@ export function FeatureOverviewView({
                       ? "badge-attention"
                       : "badge-success"
                   }`}
-                  title={riskBadge}
-                  style={{ fontSize: "11px", padding: "1px 6px", maxWidth: "100%" }}
+                  style={{ fontSize: "11px", padding: "1px 6px" }}
                 >
-                  <span className="truncate">{riskBadge}</span>
+                  {riskBadge}
                 </span>
               </div>
               <p style={{ fontSize: "14px", color: "var(--fg-muted)", marginTop: "4px", lineHeight: "1.5" }} className="line-clamp-2">
@@ -251,7 +250,7 @@ export function FeatureOverviewView({
         </div>
 
         {/* Sub-Navigation Tabs */}
-        <div className="flex items-center gap-2 mt-4 overflow-x-auto" style={{ borderBottom: "1px solid var(--border-muted)" }}>
+        <div className="flex items-center gap-2 mt-4" style={{ borderBottom: "1px solid var(--border-muted)" }}>
           <button
             onClick={() => setActiveSubTab("overview")}
             className={`github-tab ${activeSubTab === "overview" ? "active" : ""}`}
